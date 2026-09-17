@@ -355,7 +355,7 @@
 
 <div class="filtri">
   <label>Cerca:</label>
-  <input type="text" id="filtro-search" placeholder="Nome, città..." oninput="filtra()">
+  <input type="text" id="filtro-search" placeholder="Nome, telefono, email, Instagram, città..." oninput="filtra()">
   <label>Categoria:</label>
   <select id="filtro-cat" onchange="filtra()"><option value="">Tutte</option></select>
   <label>Città:</label>
@@ -756,8 +756,22 @@ function filtra() {
   const citta = document.getElementById('filtro-citta').value;
   const prio = document.getElementById('filtro-prio').value;
 
+  // Cerca "globale": nome, citta', categoria, email, Instagram, sito, indirizzo E telefono.
+  // Il telefono si confronta solo sulle cifre, cosi' "329 176 9967", "+39 3291769967" e "329-1769967" sono uguali.
+  const searchCifre = search.replace(/\D/g, '');
+  const cercaNumero = searchCifre.length >= 4 && /^[\d\s+\-().]+$/.test(search);
   LEADS_FILTRATI = LEADS.filter(l => {
-    if (search && !l.nome_azienda?.toLowerCase().includes(search) && !l.citta?.toLowerCase().includes(search) && !l.categoria?.toLowerCase().includes(search)) return false;
+    if (search) {
+      let trovato;
+      if (cercaNumero) {
+        const tel = (l.telefono || '').replace(/\D/g, '');
+        trovato = tel.includes(searchCifre) || (searchCifre.startsWith('39') && tel.includes(searchCifre.slice(2)));
+      } else {
+        trovato = [l.nome_azienda, l.citta, l.categoria, l.email, l.instagram, l.facebook, l.sito_web, l.indirizzo]
+          .some(v => v && v.toLowerCase().includes(search));
+      }
+      if (!trovato) return false;
+    }
     if (cat && l.categoria !== cat) return false;
     if (citta && l.citta !== citta) return false;
     if (prio && l.priorita !== prio) return false;
