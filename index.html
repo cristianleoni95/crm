@@ -265,6 +265,14 @@
   .avviso-pc.on  { display: block; background: rgba(109,191,109,0.10); border: 1px solid rgba(109,191,109,0.35); color: #8fdc8f; }
   .avviso-pc.busy{ display: block; background: rgba(200,125,255,0.10); border: 1px solid rgba(200,125,255,0.35); color: #dba8ff; }
 
+  .card-azioni { display: flex; gap: 5px; margin-top: 8px; flex-wrap: wrap; }
+  .az { font-size: 0.66rem; font-weight: 700; padding: 5px 9px; border-radius: 999px; border: 1px solid transparent; cursor: pointer; text-decoration: none; line-height: 1; }
+  .az-wa { background: rgba(37,211,102,0.16); color: #5fe58a; border-color: rgba(37,211,102,0.35); }
+  .az-ig { background: rgba(193,53,132,0.22); color: #ffb3dc; border-color: rgba(193,53,132,0.45); }
+  .az-mail { background: rgba(125,184,255,0.16); color: #9ecbff; border-color: rgba(125,184,255,0.35); }
+  .az-tel { background: rgba(240,165,0,0.16); color: #ffc966; border-color: rgba(240,165,0,0.35); }
+  .az:hover { filter: brightness(1.25); }
+  @media (max-width: 768px) { .az { font-size: 0.76rem; padding: 8px 12px; } }
   .note-crm { width: 100%; min-height: 70px; background: var(--inset); border: 1px solid var(--inset-border); color: #dde0ea; padding: 10px 12px; border-radius: var(--r-sm); font-size: 0.83rem; font-family: inherit; resize: vertical; outline: none; }
   .note-crm:focus { border-color: #7db8ff; }
 
@@ -831,7 +839,22 @@ function cardHTML(l) {
     <div class="card-social">${chips.join('')}</div>
     <div class="canale-tag">→ <strong>${esc(l.canale_consigliato) || '—'}</strong></div>
     ${l.contattato_tramite ? `<div class="canale-tag">✓ Contattato su <strong>${esc(l.contattato_tramite)}</strong></div>` : ''}
+    <div class="card-azioni">
+      ${l.telefono ? `<button class="az az-wa" title="WhatsApp col messaggio pronto" onclick="event.stopPropagation();azioneRapida('${l.id}','wa')">💬 WhatsApp</button>` : ''}
+      ${l.instagram ? `<button class="az az-ig" title="Copia messaggio e apri DM Instagram" onclick="event.stopPropagation();azioneRapida('${l.id}','ig')">📩 DM</button>` : ''}
+      ${l.email ? `<button class="az az-mail" title="Scrivi email" onclick="event.stopPropagation();azioneRapida('${l.id}','mail')">✉ Email</button>` : ''}
+      ${l.telefono && MOBILE ? `<a class="az az-tel" href="tel:${esc(l.telefono.replace(/\s+/g,''))}" onclick="event.stopPropagation()">📞</a>` : ''}
+    </div>
   </div>`;
+}
+
+// Dalla card: apre la scheda (cosi' poi segni "contattato") e lancia subito il canale scelto
+async function azioneRapida(id, canale) {
+  await apriModal(id);
+  if (!LEAD_CORRENTE || LEAD_CORRENTE.id !== id) return;
+  if (canale === 'wa') apriWhatsApp();
+  else if (canale === 'ig') apriDM();
+  else if (canale === 'mail') apriEmail();
 }
 
 function toggleTop50() {
@@ -1050,8 +1073,7 @@ function apriWhatsApp() {
   if (!LEAD_CORRENTE || !LEAD_CORRENTE.telefono) return;
   const numero = numeroWhatsapp(LEAD_CORRENTE.telefono);
   const testo = encodeURIComponent(document.getElementById('outreach-text').textContent);
-  if (MOBILE) window.open(`https://wa.me/${numero}?text=${testo}`, '_blank');
-  else window.location.href = `whatsapp://send?phone=${numero}&text=${testo}`;
+  window.location.href = MOBILE ? `https://wa.me/${numero}?text=${testo}` : `whatsapp://send?phone=${numero}&text=${testo}`;
 }
 
 // Email: sul PC apre Gmail web con il tuo account; sul telefono l'app di posta (Gmail).
