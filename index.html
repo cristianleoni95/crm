@@ -293,6 +293,9 @@
   .col-richiamo .col-header { background: rgba(200,125,255,0.16); color: #dba8ff; }
   .col-info .col-header { background: rgba(240,165,0,0.18); color: #ffc966; }
   .col-risentire .col-header { background: rgba(90,180,255,0.16); color: #8fd0ff; }
+  .col-tratt .col-header { background: rgba(255,120,190,0.16); color: #ffb3dc; }
+  .st-tratt .stat-num { color: #ffb3dc; }
+  .es-tratt { background: rgba(255,120,190,0.16); color: #ffb3dc; border-color: rgba(255,120,190,0.4) !important; }
   .card-meta { font-size: 0.66rem; color: #9aa1b2; margin-top: 5px; }
   .card-meta b { color: #dde0ea; font-weight: 600; }
   .card-meta.scaduto b { color: #ffc077; }
@@ -401,6 +404,7 @@
     <div class="stat st-attesa" onclick="vaiAColonnaNome('in_attesa')"><div class="stat-num" id="st-in_attesa">0</div><div class="stat-label">In attesa</div></div>
     <div class="stat st-richiamo" onclick="vaiAColonnaNome('da_richiamare')"><div class="stat-num" id="st-da_richiamare">0</div><div class="stat-label">Da richiamare</div></div>
     <div class="stat st-info" onclick="vaiAColonnaNome('chiede_info')"><div class="stat-num" id="st-chiede_info">0</div><div class="stat-label">🔥 Chiedono info</div></div>
+    <div class="stat st-tratt" onclick="vaiAColonnaNome('trattativa')"><div class="stat-num" id="st-trattativa">0</div><div class="stat-label">🤝 In trattativa</div></div>
     <div class="stat st-risentire" onclick="vaiAColonnaNome('risentire')"><div class="stat-num" id="st-risentire">0</div><div class="stat-label">Da risentire</div></div>
     <div class="stat st-cliente" onclick="vaiAColonnaNome('cliente')"><div class="stat-num" id="st-cliente">0</div><div class="stat-label">Clienti</div></div>
     <div class="stat st-inviati"><div class="stat-num" id="st-inviati">0</div><div class="stat-label">Inviati oggi <span id="st-inviati-ieri"></span></div></div>
@@ -505,7 +509,7 @@
 </div>
 
 <!-- KANBAN -->
-<div class="kanban-tabs" id="kanban-tabs"><button data-stato="da_contattare" class="attiva" onclick="vaiAColonna(this)">Da contattare <b id="tab-cnt-da_contattare">0</b></button><button data-stato="in_attesa" onclick="vaiAColonna(this)">In attesa <b id="tab-cnt-in_attesa">0</b></button><button data-stato="da_richiamare" onclick="vaiAColonna(this)">Da richiamare <b id="tab-cnt-da_richiamare">0</b></button><button data-stato="chiede_info" onclick="vaiAColonna(this)">Chiede info <b id="tab-cnt-chiede_info">0</b></button><button data-stato="risentire" onclick="vaiAColonna(this)">Da risentire <b id="tab-cnt-risentire">0</b></button><button data-stato="cliente" onclick="vaiAColonna(this)">Clienti <b id="tab-cnt-cliente">0</b></button></div>
+<div class="kanban-tabs" id="kanban-tabs"><button data-stato="da_contattare" class="attiva" onclick="vaiAColonna(this)">Da contattare <b id="tab-cnt-da_contattare">0</b></button><button data-stato="in_attesa" onclick="vaiAColonna(this)">In attesa <b id="tab-cnt-in_attesa">0</b></button><button data-stato="da_richiamare" onclick="vaiAColonna(this)">Da richiamare <b id="tab-cnt-da_richiamare">0</b></button><button data-stato="chiede_info" onclick="vaiAColonna(this)">Chiede info <b id="tab-cnt-chiede_info">0</b></button><button data-stato="trattativa" onclick="vaiAColonna(this)">In trattativa <b id="tab-cnt-trattativa">0</b></button><button data-stato="risentire" onclick="vaiAColonna(this)">Da risentire <b id="tab-cnt-risentire">0</b></button><button data-stato="cliente" onclick="vaiAColonna(this)">Clienti <b id="tab-cnt-cliente">0</b></button></div>
 <div class="kanban-view" id="kanban-view">
   <div class="colonna col-da-contattare" id="colonna-da_contattare">
     <div class="col-header"><h3>Da contattare</h3><span class="col-count" id="cnt-da_contattare">0</span></div>
@@ -522,6 +526,10 @@
   <div class="colonna col-info" id="colonna-chiede_info">
     <div class="col-header"><h3>Chiede info</h3><span class="col-count" id="cnt-chiede_info">0</span></div>
     <div class="cards-container" id="col-chiede_info"></div>
+  </div>
+  <div class="colonna col-tratt" id="colonna-trattativa">
+    <div class="col-header"><h3>In trattativa</h3><span class="col-count" id="cnt-trattativa">0</span></div>
+    <div class="cards-container" id="col-trattativa"></div>
   </div>
   <div class="colonna col-risentire" id="colonna-risentire">
     <div class="col-header"><h3>Da risentire</h3><span class="col-count" id="cnt-risentire">0</span></div>
@@ -570,9 +578,9 @@ let EVENTI_RECENTI = [];          // eventi da ieri in qua (per contatori)
 let REGOLE = { richiami_al_giorno: 30, giorni_prima_del_richiamo: 7, giorni_attesa_prima_di_archiviare: 10, giorni_risentire: 90, whatsapp_max_giorno: 90, whatsapp_avviso: 80, score_minimo_richiamo: 60 };
 let MSG_RICHIAMO = 'Ciao {nome}! Ti avevo scritto qualche giorno fa e immagino che il messaggio si sia perso tra i tanti. Sono Cristian, videomaker: mi farebbe piacere capire in 5 minuti se posso esservi utile con un video per la vostra attività. Se non è il momento, nessun problema: basta un "no grazie" e non vi disturbo più. A presto!';
 
-const COLONNE = ['da_contattare', 'in_attesa', 'da_richiamare', 'chiede_info', 'risentire', 'cliente'];
-const NOMI_COLONNE = { da_contattare: 'Da contattare', in_attesa: 'In attesa', da_richiamare: 'Da richiamare', chiede_info: 'Chiede info', risentire: 'Da risentire', cliente: 'Clienti', archivio: 'Archivio' };
-const NOMI_ESITO = { chiede_info: '🔥 Chiede info', risentire: '🕓 Ci sentiremo più avanti', non_interessato: '✕ Non interessato', cliente: '⭐ Cliente', nessuna_risposta: '📦 Nessuna risposta' };
+const COLONNE = ['da_contattare', 'in_attesa', 'da_richiamare', 'chiede_info', 'trattativa', 'risentire', 'cliente'];
+const NOMI_COLONNE = { da_contattare: 'Da contattare', in_attesa: 'In attesa', da_richiamare: 'Da richiamare', chiede_info: 'Chiede info', trattativa: 'In trattativa', risentire: 'Da risentire', cliente: 'Clienti', archivio: 'Archivio' };
+const NOMI_ESITO = { chiede_info: '🔥 Chiede info', trattativa: '🤝 In trattativa', risentire: '🕓 Più avanti (mesi)', non_interessato: '✕ Non interessato', cliente: '⭐ Cliente', nessuna_risposta: '📦 Nessuna risposta' };
 const MOTIVI_NO = { nessun_budget: 'Nessun budget', ha_gia_qualcuno: 'Ha già qualcuno', non_target: 'Non è il target', altro: 'Altro' };
 const NOMI_ARCHIVIO = { nessuna_risposta: 'nessuna risposta', non_interessato: 'non interessato', 'contattati_prima_del_2026-09-18': 'contattato prima del 18/09/2026' };
 const MOBILE = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && window.innerWidth < 900);
@@ -619,6 +627,7 @@ function prioBadge(p) {
 function colonnaDi(l) {
   if (l.archiviato || l.stato_kanban === 'non_interessato') return 'archivio';
   if (l.stato_kanban === 'cliente' || l.esito === 'cliente') return 'cliente';
+  if (l.esito === 'trattativa') return 'trattativa';
   if (l.esito === 'risentire') return 'risentire';
   if (l.esito === 'chiede_info' || l.stato_kanban === 'risposto') return 'chiede_info';
   if (l.stato_kanban === 'da_contattare' && !(l.n_contatti > 0)) return 'da_contattare';
@@ -896,7 +905,7 @@ function renderKanban() {
   COLONNE.forEach(col => {
     const box = document.getElementById('col-' + col);
     let leads = LEADS_FILTRATI.filter(l => colonnaDi(l) === col);
-    if (col === 'risentire') leads.sort((a, b) => (a.risentire_il || '').localeCompare(b.risentire_il || ''));
+    if (col === 'risentire' || col === 'trattativa') leads.sort((a, b) => (a.risentire_il || '').localeCompare(b.risentire_il || ''));
     if (col === 'in_attesa') leads.sort((a, b) => (b.ultimo_contatto_il || '').localeCompare(a.ultimo_contatto_il || ''));
     document.getElementById('cnt-' + col).textContent = leads.length;
     const tab = document.getElementById('tab-cnt-' + col); if (tab) tab.textContent = leads.length;
@@ -966,6 +975,7 @@ function metaCard(l) {
   const col = colonnaDi(l);
   if (col === 'in_attesa') return `<div class="card-meta">✓ Scritto <b>${giorniFaTesto(l.ultimo_contatto_il) || 'prima del 18/09'}</b> via <b>${esc(l.contattato_tramite || '—')}</b>${(l.n_contatti || 0) >= 2 ? ' · 2° messaggio' : ''}</div>`;
   if (col === 'da_richiamare') return `<div class="card-meta">↻ 1° messaggio <b>${giorniFaTesto(l.ultimo_contatto_il)}</b> via <b>${esc(l.contattato_tramite || '—')}</b>, nessuna risposta → <b>richiamo</b></div>`;
+  if (col === 'trattativa') { const scad = l.risentire_il && l.risentire_il <= oggiLocale(); return `<div class="card-meta ${scad ? 'scaduto' : ''}">🤝 In trattativa · risentire il <b>${l.risentire_il ? new Date(l.risentire_il).toLocaleDateString('it-IT') : '—'}</b>${scad ? ' · è ora!' : ''}${l.note_crm ? '<br>📝 ' + esc(l.note_crm.slice(0, 90)) + (l.note_crm.length > 90 ? '…' : '') : ''}</div>`; }
   if (col === 'risentire') { const scad = l.risentire_il && l.risentire_il <= oggiLocale(); return `<div class="card-meta ${scad ? 'scaduto' : ''}">🕓 Risentire il <b>${l.risentire_il ? new Date(l.risentire_il).toLocaleDateString('it-IT') : '—'}</b>${scad ? ' · è ora!' : ''}</div>`; }
   if (col === 'chiede_info') return `<div class="card-meta">🔥 Ha chiesto info <b>${giorniFaTesto(l.aggiornato_il)}</b> · da chiudere</div>`;
   if (col === 'cliente') return `<div class="card-meta">⭐ Cliente</div>`;
@@ -1072,12 +1082,13 @@ function htmlEsiti(l) {
   const att = k => (l.esito === k ? ' attivo' : '');
   let riga = '';
   if (col === 'archivio') riga = `<div class="esito-riga">📦 In archivio: <b>${esc(NOMI_ARCHIVIO[l.archivio_motivo] || l.archivio_motivo || '')}</b>${l.motivo_no ? ' — motivo: <b>' + esc(MOTIVI_NO[l.motivo_no] || l.motivo_no) + '</b>' : ''}${l.archiviato_il ? ' · ' + dataOra(l.archiviato_il) : ''}</div>`;
-  else if (l.esito) riga = `<div class="esito-riga">Esito: <b>${NOMI_ESITO[l.esito] || l.esito}</b>${l.esito === 'risentire' && l.risentire_il ? ' — promemoria il <b>' + new Date(l.risentire_il).toLocaleDateString('it-IT') + '</b> (<a href="#" onclick="cambiaDataRisentire(event)" style="color:#8fd0ff">cambia</a>)' : ''}</div>`;
+  else if (l.esito) riga = `<div class="esito-riga">Esito: <b>${NOMI_ESITO[l.esito] || l.esito}</b>${(l.esito === 'risentire' || l.esito === 'trattativa') && l.risentire_il ? ' — promemoria il <b>' + new Date(l.risentire_il).toLocaleDateString('it-IT') + '</b> (<a href="#" onclick="cambiaDataRisentire(event)" style="color:#8fd0ff">cambia</a>)' : ''}</div>`;
   else riga = `<div class="esito-riga">In attesa di risposta · ${l.n_contatti || 1} messaggio/i · ultimo <b>${giorniFaTesto(l.ultimo_contatto_il) || 'prima del 18/09'}</b> via <b>${esc(l.contattato_tramite || '—')}</b>. Se risponde, un tocco qui sotto:</div>`;
   return riga + `
     <div class="esiti">
       <button class="es-info${att('chiede_info')}" onclick="segnaEsito('chiede_info')">🔥 Chiede info</button>
-      <button class="es-risentire${att('risentire')}" onclick="segnaEsito('risentire')">🕓 Ci sentiremo più avanti</button>
+      <button class="es-tratt${att('trattativa')}" onclick="segnaEsito('trattativa')">🤝 In trattativa (risentire a giorni)</button>
+      <button class="es-risentire${att('risentire')}" onclick="segnaEsito('risentire')">🕓 Più avanti (mesi)</button>
       <button class="es-no${att('non_interessato')}" onclick="mostraMotivi()">✕ Non interessato</button>
       <button class="es-cliente${att('cliente')}" onclick="segnaEsito('cliente')">⭐ Cliente</button>
       ${col === 'archivio' ? `<button class="es-ripristina" onclick="ripristina()">↩ Rimetti fra gli attivi</button>`
@@ -1253,6 +1264,12 @@ async function segnaEsito(esito, motivo) {
   const disarchivia = { archiviato: false, archiviato_il: null, archivio_motivo: null };
   if (esito === 'chiede_info') Object.assign(campi, { stato_kanban: 'risposto' }, disarchivia);
   if (esito === 'risentire') { const d = new Date(); d.setDate(d.getDate() + (REGOLE.giorni_risentire || 90)); Object.assign(campi, { stato_kanban: 'risposto', risentire_il: d.toLocaleDateString('sv-SE') }, disarchivia); }
+  if (esito === 'trattativa') {
+    const gg = parseInt(prompt('Fra quanti giorni risentirli?', '3'), 10);
+    if (!gg && gg !== 0) return;
+    const d = new Date(); d.setDate(d.getDate() + (isNaN(gg) ? 3 : gg));
+    Object.assign(campi, { stato_kanban: 'risposto', risentire_il: d.toLocaleDateString('sv-SE') }, disarchivia);
+  }
   if (esito === 'cliente') Object.assign(campi, { stato_kanban: 'cliente' }, disarchivia);
   if (esito === 'non_interessato') Object.assign(campi, { stato_kanban: 'non_interessato', motivo_no: motivo || null, archiviato: true, archiviato_il: new Date().toISOString(), archivio_motivo: 'non_interessato' });
   if (esito === 'nessuna_risposta') { Object.assign(campi, { archiviato: true, archiviato_il: new Date().toISOString(), archivio_motivo: 'nessuna_risposta' }); evento = { tipo: 'archivio', motivo: 'nessuna_risposta' }; }
@@ -1417,6 +1434,8 @@ function aggiornaStats() {
   COLONNE.forEach(c => { const el = document.getElementById('st-' + c); if (el) el.textContent = conta[c]; });
   const scaduti = LEADS.filter(l => colonnaDi(l) === 'risentire' && l.risentire_il && l.risentire_il <= oggiLocale()).length;
   const elR = document.getElementById('st-risentire'); if (elR) elR.innerHTML = conta.risentire + (scaduti ? `<span class="stat-su" style="color:#ffc077"> · ${scaduti} ora</span>` : '');
+  const scadT = LEADS.filter(l => colonnaDi(l) === 'trattativa' && l.risentire_il && l.risentire_il <= oggiLocale()).length;
+  const elT = document.getElementById('st-trattativa'); if (elT) elT.innerHTML = conta.trattativa + (scadT ? `<span class="stat-su" style="color:#ffc077"> · ${scadT} ora</span>` : '');
   document.getElementById('cnt-archivio').textContent = arch;
 
   const oggi = inizioGiornoISO(), ieri = inizioGiornoISO(-1);
@@ -1464,7 +1483,7 @@ function renderCharts() {
   const conti = chiavi.map(c => LEADS.filter(l => colonnaDi(l) === c).length);
   GRAFICI.funnel = new Chart(document.getElementById('chart-funnel'), {
     type: 'bar',
-    data: { labels: chiavi.map(c => NOMI_COLONNE[c]), datasets: [{ data: conti, backgroundColor: ['#a3b3ff', '#b6bccb', '#dba8ff', '#ffc966', '#8fd0ff', '#8fdc8f', '#767d8c'], borderRadius: 8, maxBarThickness: 40 }] },
+    data: { labels: chiavi.map(c => NOMI_COLONNE[c]), datasets: [{ data: conti, backgroundColor: ['#a3b3ff', '#b6bccb', '#dba8ff', '#ffc966', '#ffb3dc', '#8fd0ff', '#8fdc8f', '#767d8c'], borderRadius: 8, maxBarThickness: 40 }] },
     options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { grid: { color: glassGrid } }, y: { grid: { display: false } } } }
   });
 
@@ -1479,7 +1498,7 @@ function renderCharts() {
 
   // 3) categorie: contattati vs risposte (chiede info / risentire / cliente)
   const perCat = {};
-  LEADS.forEach(l => { if (!l.categoria || !(l.n_contatti > 0)) return; const c = perCat[l.categoria] = perCat[l.categoria] || { tot: 0, risp: 0 }; c.tot++; if (['chiede_info', 'risentire', 'cliente'].includes(l.esito)) c.risp++; });
+  LEADS.forEach(l => { if (!l.categoria || !(l.n_contatti > 0)) return; const c = perCat[l.categoria] = perCat[l.categoria] || { tot: 0, risp: 0 }; c.tot++; if (['chiede_info', 'trattativa', 'risentire', 'cliente'].includes(l.esito)) c.risp++; });
   const topCat = Object.entries(perCat).sort((a, b) => b[1].tot - a[1].tot).slice(0, 10);
   GRAFICI.categorie = new Chart(document.getElementById('chart-categorie'), {
     type: 'bar',
