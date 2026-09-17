@@ -1,0 +1,10 @@
+{
+  "name": "CRM Videomaker — Leoni Films",
+  "short_name": "CRM Leoni",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#131b3f",
+  "theme_color": "#131b3f",
+  "lang": "it",
+  "icons": [{ "src": "icona.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

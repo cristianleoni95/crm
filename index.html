@@ -1,0 +1,1380 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>CRM Videomaker — Lead Dashboard</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#131b3f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CRM Leoni">
+<link rel="apple-touch-icon" href="icona.svg">
+<link rel="icon" href="icona.svg" type="image/svg+xml">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --glass: rgba(255,255,255,0.055);
+    --glass-strong: rgba(255,255,255,0.10);
+    --glass-hover: rgba(255,255,255,0.14);
+    --glass-border: rgba(255,255,255,0.11);
+    --glass-blur: blur(28px);
+    --inset: rgba(0,0,0,0.22);
+    --inset-border: rgba(255,255,255,0.06);
+    --r-lg: 22px;
+    --r-md: 16px;
+    --r-sm: 11px;
+    --shadow: 0 8px 32px rgba(0,0,0,0.35);
+  }
+
+  html, body { height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', 'Helvetica Neue', sans-serif;
+    background: #05060a; color: #eef0f6; min-height: 100vh; position: relative; overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+  /* SFONDO GLOW — luce diffusa fissa dietro tutta l'interfaccia */
+  body::before {
+    content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(ellipse 1100px 700px at 8% -6%, rgba(90,150,255,0.55), transparent 62%),
+      radial-gradient(ellipse 820px 620px at 102% 8%, rgba(150,90,255,0.45), transparent 62%),
+      radial-gradient(ellipse 780px 640px at 12% 108%, rgba(70,210,220,0.30), transparent 62%),
+      radial-gradient(ellipse 650px 550px at 96% 102%, rgba(255,90,150,0.22), transparent 62%),
+      linear-gradient(160deg, #131b3f 0%, #1a1440 42%, #0c0e28 78%, #05060f 100%);
+  }
+  .header, .filtri, .lista-view, .kanban-view, .ricerca-view, .modal-overlay { position: relative; z-index: 1; }
+
+  /* HEADER */
+  .header { padding: 24px 32px 18px; }
+  .header h1 { font-size: 1.5rem; font-weight: 700; color: #fff; letter-spacing: -0.5px; }
+  .header h1 span { color: #7db8ff; }
+  .stats-bar { display: flex; gap: 14px; margin-top: 16px; flex-wrap: wrap; }
+  .stat { background: var(--glass); border: 1px solid var(--glass-border); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur); border-radius: var(--r-md); padding: 12px 20px; box-shadow: var(--shadow); }
+  .stat-num { font-size: 1.5rem; font-weight: 700; color: #fff; letter-spacing: -0.3px; }
+  .stat-label { font-size: 0.68rem; color: #9aa1b2; text-transform: uppercase; letter-spacing: 0.6px; margin-top: 2px; }
+  .stat-assoluta .stat-num { color: #ff7b7b; }
+  .stat-alta .stat-num { color: #ffb066; }
+
+  /* FILTRI */
+  .filtri { margin: 0 32px 18px; padding: 14px 20px; background: var(--glass); border: 1px solid var(--glass-border); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur); border-radius: var(--r-md); display: flex; gap: 10px; flex-wrap: wrap; align-items: center; box-shadow: var(--shadow); }
+  .filtri input, .filtri select { background: var(--inset); border: 1px solid var(--inset-border); color: #eef0f6; padding: 7px 12px; border-radius: var(--r-sm); font-size: 0.83rem; outline: none; }
+  .filtri input:focus, .filtri select:focus { border-color: #7db8ff; }
+  .filtri label { font-size: 0.78rem; color: #9aa1b2; }
+  .btn-esporta { background: rgba(77,159,255,0.14); color: #7eb8f7; border: 1px solid rgba(77,159,255,0.35); padding: 8px 14px; border-radius: var(--r-sm); font-size: 0.83rem; cursor: pointer; }
+  .btn-top50 { background: rgba(255,107,107,0.14); color: #ff8a8a; border: 1px solid rgba(255,107,107,0.35); padding: 8px 14px; border-radius: var(--r-sm); font-size: 0.83rem; cursor: pointer; font-weight: 700; }
+  .btn-top50.active { background: #ff6b6b; color: #1a0505; border-color: #ff6b6b; }
+  .btn-lista { background: rgba(109,191,109,0.14); color: #8fdc8f; border: 1px solid rgba(109,191,109,0.35); padding: 8px 14px; border-radius: var(--r-sm); font-size: 0.83rem; cursor: pointer; }
+
+  /* VISTA LISTA */
+  .lista-view { display: none; padding: 0 32px 20px; }
+  .lista-view.active { display: block; }
+  .lista-table { width: 100%; border-collapse: collapse; background: var(--glass); border: 1px solid var(--glass-border); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur); border-radius: var(--r-md); overflow: hidden; box-shadow: var(--shadow); }
+  .lista-table th { background: rgba(255,255,255,0.04); color: #9aa1b2; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.5px; padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--glass-border); }
+  .lista-table td { padding: 11px 14px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.83rem; vertical-align: middle; }
+  .lista-table tr:hover td { background: rgba(255,255,255,0.04); cursor: pointer; }
+
+  /* KANBAN */
+  .kanban-view { display: flex; gap: 16px; padding: 0 32px 20px; overflow-x: auto; min-height: calc(100vh - 260px); }
+  .kanban-view.hidden { display: none; }
+  .colonna { flex: 0 0 300px; background: var(--glass); border-radius: var(--r-lg); padding: 10px; border: 1px solid var(--glass-border); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur); display: flex; flex-direction: column; box-shadow: var(--shadow); }
+  .col-header { padding: 10px 12px; border-radius: var(--r-sm); margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
+  .col-header h3 { font-size: 0.82rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+  .col-count { background: rgba(255,255,255,0.15); border-radius: 20px; padding: 2px 10px; font-size: 0.72rem; font-weight: 700; }
+
+  .col-da-contattare .col-header { background: rgba(123,140,222,0.16); color: #a3b3ff; }
+  .col-contattato .col-header { background: rgba(109,191,109,0.16); color: #8fdc8f; }
+  .col-risposto .col-header { background: rgba(240,165,0,0.16); color: #ffc966; }
+  .col-cliente .col-header { background: rgba(200,125,255,0.16); color: #dba8ff; }
+  .col-non-interessato .col-header { background: rgba(255,255,255,0.08); color: #9aa1b2; }
+
+  .cards-container { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 4px; }
+  .cards-container::-webkit-scrollbar { width: 3px; }
+  .cards-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+
+  /* CARD */
+  .card { background: var(--glass-strong); border: 1px solid var(--glass-border); border-radius: var(--r-sm); padding: 12px; cursor: pointer; transition: all 0.18s; position: relative; }
+  .card:hover { border-color: rgba(255,255,255,0.25); background: var(--glass-hover); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
+  .card-nome { font-size: 0.88rem; font-weight: 700; color: #fff; margin-bottom: 3px; line-height: 1.3; padding-right: 50px; }
+  .card-cat { font-size: 0.70rem; color: #9aa1b2; margin-bottom: 6px; }
+  .card-citta { font-size: 0.72rem; color: #767d8c; }
+
+  /* SCORE BADGE 0-100 */
+  .score-badge { position: absolute; top: 10px; right: 10px; min-width: 36px; height: 24px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 800; padding: 0 8px; backdrop-filter: blur(6px); }
+  .score-assoluta { background: rgba(255,107,107,0.16); color: #ff8a8a; border: 1px solid rgba(255,107,107,0.4); }
+  .score-alta { background: rgba(255,169,77,0.16); color: #ffc077; border: 1px solid rgba(255,169,77,0.4); }
+  .score-normale { background: rgba(163,217,119,0.16); color: #bce894; border: 1px solid rgba(163,217,119,0.4); }
+  .score-bassa { background: rgba(255,255,255,0.08); color: #9aa1b2; border: 1px solid rgba(255,255,255,0.15); }
+
+  /* PRIORITA BADGE */
+  .prio-badge { display: inline-block; font-size: 0.60rem; font-weight: 800; padding: 2px 7px; border-radius: 10px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .prio-ASSOLUTA { background: rgba(255,107,107,0.16); color: #ff8a8a; border: 1px solid rgba(255,107,107,0.4); }
+  .prio-ALTA { background: rgba(255,169,77,0.16); color: #ffc077; border: 1px solid rgba(255,169,77,0.4); }
+  .prio-NORMALE { background: rgba(163,217,119,0.16); color: #bce894; border: 1px solid rgba(163,217,119,0.4); }
+  .prio-BASSA { background: rgba(255,255,255,0.08); color: #9aa1b2; border: 1px solid rgba(255,255,255,0.15); }
+
+  .card-social { display: flex; gap: 5px; margin-top: 7px; flex-wrap: wrap; }
+  .social-chip { font-size: 0.62rem; padding: 2px 7px; border-radius: 10px; font-weight: 600; }
+  .chip-ig { background: rgba(200,125,255,0.16); color: #dba8ff; }
+  .chip-fb { background: rgba(123,140,222,0.16); color: #a3b3ff; }
+  .chip-email { background: rgba(109,191,109,0.16); color: #8fdc8f; }
+  .chip-tel { background: rgba(240,165,0,0.16); color: #ffc966; }
+  .chip-yt { background: rgba(233,69,96,0.16); color: #ff8fa3; }
+  .chip-li { background: rgba(90,180,255,0.16); color: #8fd0ff; }
+  .chip-tk { background: rgba(95,255,255,0.14); color: #8ffcfc; }
+
+  .canale-tag { font-size: 0.66rem; color: #9aa1b2; margin-top: 5px; }
+  .canale-tag strong { color: #7db8ff; }
+
+  /* MODAL */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(2,3,8,0.72); backdrop-filter: blur(6px); z-index: 1000; overflow-y: auto; padding: 40px 20px; }
+  .modal-overlay.active { display: flex; align-items: flex-start; justify-content: center; }
+  .modal { background: rgba(20,22,32,0.85); border: 1px solid var(--glass-border); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur); border-radius: var(--r-lg); max-width: 700px; width: 100%; padding: 28px; position: relative; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+  .modal-close { position: absolute; top: 14px; right: 14px; background: rgba(255,255,255,0.08); border: 1px solid var(--glass-border); color: #9aa1b2; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; }
+  .modal-close:hover { background: #e94560; border-color: #e94560; color: #fff; }
+  .modal-header { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 16px; }
+  .modal-score-circle { min-width: 56px; height: 56px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: 800; flex-shrink: 0; backdrop-filter: blur(6px); }
+  .modal h2 { font-size: 1.2rem; color: #fff; margin-bottom: 3px; }
+  .modal-cat { font-size: 0.78rem; color: #9aa1b2; }
+
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .info-item { background: var(--inset); border: 1px solid var(--inset-border); border-radius: var(--r-sm); padding: 10px 14px; }
+  .info-label { font-size: 0.66rem; color: #767d8c; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .info-val { font-size: 0.83rem; color: #dde0ea; word-break: break-all; }
+  .info-val a { color: #7eb8f7; text-decoration: none; }
+  .info-val a:hover { text-decoration: underline; }
+  .campo-editabile { flex: 1; background: transparent; border: none; border-bottom: 1px dashed transparent; color: #dde0ea; font-size: 0.83rem; padding: 2px 0; outline: none; font-family: inherit; }
+  .campo-editabile:hover { border-bottom-color: var(--inset-border); }
+  .campo-editabile:focus { border-bottom-color: #7db8ff; }
+  .campo-editabile::placeholder { color: #565d6d; }
+
+  .outreach-box { background: var(--inset); border: 1px solid var(--inset-border); border-radius: var(--r-md); padding: 14px; margin-bottom: 16px; }
+  .outreach-box h4 { font-size: 0.72rem; color: #7db8ff; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .outreach-text { font-size: 0.86rem; color: #ccd0dc; line-height: 1.6; white-space: pre-wrap; }
+  /* linguette per scegliere fra i tre messaggi */
+  .outreach-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+  .outreach-tab { background: rgba(255,255,255,0.06); color: #aab0c0; border: 1px solid rgba(255,255,255,0.12); padding: 6px 12px; border-radius: 999px; font-size: 0.74rem; cursor: pointer; transition: background .15s, color .15s; }
+  .outreach-tab:hover { background: rgba(255,255,255,0.12); color: #fff; }
+  .outreach-tab.attiva { background: rgba(125,184,255,0.22); color: #cfe4ff; border-color: rgba(125,184,255,0.5); }
+  .outreach-tab.inviato { border-style: dashed; }
+  .outreach-oggetto { font-size: 0.8rem; color: #9ecbff; margin-bottom: 8px; }
+  .outreach-oggetto b { color: #7db8ff; font-weight: 600; }
+  .btn-copia { background: rgba(109,191,109,0.16); color: #8fdc8f; border: 1px solid rgba(109,191,109,0.35); padding: 7px 14px; border-radius: var(--r-sm); font-size: 0.76rem; cursor: pointer; margin-top: 10px; }
+  .btn-copia:hover { background: rgba(109,191,109,0.28); }
+
+  .stato-select { background: var(--inset); border: 1px solid var(--inset-border); color: #eef0f6; padding: 8px 14px; border-radius: var(--r-sm); font-size: 0.83rem; width: 100%; margin-top: 4px; }
+  .note-box { background: var(--inset); border: 1px solid var(--inset-border); border-radius: var(--r-sm); padding: 10px 14px; margin-bottom: 14px; }
+  .note-box p { font-size: 0.80rem; color: #b6bccb; line-height: 1.5; }
+
+  .empty { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 16px; color: #565d6d; font-size: 0.80rem; text-align: center; gap: 6px; }
+  .empty-icon { font-size: 1.6rem; }
+
+  /* SEPARATORE TOP 50 */
+  .top50-label { font-size: 0.68rem; color: #ff8a8a; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; padding: 4px 8px; background: rgba(255,107,107,0.14); border-radius: var(--r-sm); margin-bottom: 6px; display: block; }
+  .separator-line { height: 1px; background: var(--glass-border); margin: 8px 0; }
+
+  /* NUOVA RICERCA */
+  .btn-ricerca { background: rgba(200,125,255,0.14); color: #dba8ff; border: 1px solid rgba(200,125,255,0.35); padding: 8px 14px; border-radius: var(--r-sm); font-size: 0.83rem; cursor: pointer; }
+  .btn-ricerca.active { background: #c87dff; color: #1a0a2a; border-color: #c87dff; }
+  .btn-stats { background: rgba(90,180,255,0.14); color: #8fd0ff; border: 1px solid rgba(90,180,255,0.35); padding: 8px 14px; border-radius: var(--r-sm); font-size: 0.83rem; cursor: pointer; }
+  .btn-stats.active { background: #5ab4ff; color: #05131f; border-color: #5ab4ff; }
+
+  .stats-view { display: none; padding: 0 32px 20px; gap: 20px; grid-template-columns: 1fr 1fr; }
+  .stats-view.active { display: grid; }
+  .stats-view .ricerca-col canvas { margin-top: 6px; }
+
+  .ricerca-view { display: none; padding: 0 32px 20px; gap: 20px; }
+  .ricerca-view.active { display: grid; grid-template-columns: 1fr 1fr; }
+  .ricerca-col { background: var(--glass); border: 1px solid var(--glass-border); backdrop-filter: var(--glass-blur); -webkit-backdrop-filter: var(--glass-blur); border-radius: var(--r-lg); padding: 20px; box-shadow: var(--shadow); }
+  .ricerca-col h3 { font-size: 0.95rem; color: #fff; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+
+  .sezione-cat { margin-bottom: 14px; }
+  .sezione-cat-titolo { font-size: 0.68rem; color: #9aa1b2; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .chip-cat-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip-cat { background: var(--inset); border: 1px solid var(--inset-border); color: #ccd0dc; padding: 5px 11px; border-radius: 20px; font-size: 0.76rem; cursor: pointer; user-select: none; transition: all .15s; }
+  .chip-cat:hover { border-color: rgba(255,255,255,0.3); }
+  .chip-cat.selezionata { background: #c87dff; color: #1a0a2a; border-color: #c87dff; font-weight: 600; }
+
+  .cat-custom-input { width: 100%; background: var(--inset); border: 1px solid var(--inset-border); color: #eef0f6; padding: 8px 12px; border-radius: var(--r-sm); font-size: 0.83rem; margin-top: 10px; }
+
+  /* Tile OSM chiare rese scure via filtro (CARTO dark ora richiede una API key) */
+  #mappa-raggio .leaflet-tile-pane { filter: invert(1) hue-rotate(190deg) brightness(0.85) contrast(0.9) saturate(0.7); }
+  #mappa-raggio { height: 320px; border-radius: var(--r-md); margin-top: 8px; background: #10121a; border: 1px solid var(--glass-border); }
+  .raggio-controls { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+  .raggio-controls input[type=range] { flex: 1; accent-color: #c87dff; }
+  .raggio-val { font-size: 0.83rem; color: #dba8ff; font-weight: 700; min-width: 110px; text-align: right; }
+  .epicentro-label { font-size: 0.76rem; color: #9aa1b2; margin-top: 6px; }
+  .epicentro-label strong { color: #dde0ea; }
+
+  .num-lead-row { display: flex; align-items: center; gap: 10px; margin-top: 16px; }
+  .num-lead-row input { width: 90px; background: var(--inset); border: 1px solid var(--inset-border); color: #eef0f6; padding: 7px 10px; border-radius: var(--r-sm); font-size: 0.9rem; }
+
+  .ricerca-azioni { display: flex; gap: 10px; margin-top: 18px; }
+  .btn-avvia { background: rgba(109,191,109,0.18); color: #8fdc8f; border: 1px solid rgba(109,191,109,0.4); padding: 10px 20px; border-radius: var(--r-sm); font-size: 0.88rem; font-weight: 700; cursor: pointer; }
+  .btn-avvia:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-ferma { background: rgba(255,107,107,0.18); color: #ff8a8a; border: 1px solid rgba(255,107,107,0.4); padding: 10px 20px; border-radius: var(--r-sm); font-size: 0.88rem; font-weight: 700; cursor: pointer; display: none; }
+
+  .ricerca-stato { margin-top: 16px; }
+  .ricerca-stato-riga { display: flex; justify-content: space-between; font-size: 0.82rem; color: #9aa1b2; padding: 4px 0; }
+  .ricerca-stato-riga strong { color: #fff; }
+  .ricerca-barra { height: 6px; background: var(--inset); border-radius: 4px; overflow: hidden; margin-top: 8px; }
+  .ricerca-barra-fill { height: 100%; background: linear-gradient(90deg, #c87dff, #6dbf6d); width: 0%; transition: width .3s; }
+  .ricerca-log { background: rgba(0,0,0,0.35); border: 1px solid var(--inset-border); border-radius: var(--r-sm); padding: 10px 12px; margin-top: 14px; height: 220px; overflow-y: auto; font-family: 'Consolas', monospace; font-size: 0.72rem; color: #9aa1b2; white-space: pre-wrap; }
+  .ricerca-log .riga-nuovo { color: #8fdc8f; }
+
+  /* ===== CLOUD: header, stato, login, caricamento ===== */
+  .header-riga { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .header-destra { display: flex; align-items: center; gap: 8px; }
+  .pill-pc, .pill-sync { font-size: 0.7rem; padding: 5px 10px; border-radius: 999px; border: 1px solid var(--glass-border); background: var(--glass); color: #9aa1b2; white-space: nowrap; }
+  .pill-pc.on { color: #8fdc8f; border-color: rgba(109,191,109,0.4); background: rgba(109,191,109,0.12); }
+  .pill-pc.off { color: #ffc077; border-color: rgba(255,169,77,0.35); background: rgba(255,169,77,0.10); }
+  .pill-pc.busy { color: #dba8ff; border-color: rgba(200,125,255,0.4); background: rgba(200,125,255,0.12); }
+  .pill-sync.ok { color: #8fdc8f; }
+  .pill-sync.err { color: #ff8a8a; }
+  .btn-esci { background: var(--glass); border: 1px solid var(--glass-border); color: #9aa1b2; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 0.9rem; }
+  .btn-esci:hover { color: #fff; border-color: rgba(255,255,255,0.3); }
+
+  .login-overlay { position: fixed; inset: 0; z-index: 2000; display: none; align-items: center; justify-content: center; padding: 20px; background: rgba(5,6,10,0.55); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+  .login-overlay.active { display: flex; }
+  .login-box { width: 100%; max-width: 380px; background: rgba(20,22,32,0.85); border: 1px solid var(--glass-border); border-radius: var(--r-lg); padding: 30px 26px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); display: flex; flex-direction: column; gap: 12px; }
+  .login-box h1 { font-size: 1.4rem; color: #fff; font-weight: 700; }
+  .login-box h1 span { color: #7db8ff; }
+  .login-box p { font-size: 0.82rem; color: #9aa1b2; margin-bottom: 6px; }
+  .login-box input { background: var(--inset); border: 1px solid var(--inset-border); color: #eef0f6; padding: 12px 14px; border-radius: var(--r-sm); font-size: 1rem; outline: none; }
+  .login-box input:focus { border-color: #7db8ff; }
+  .login-box button { background: #7db8ff; color: #06101f; border: none; padding: 12px; border-radius: var(--r-sm); font-size: 0.95rem; font-weight: 700; cursor: pointer; margin-top: 4px; }
+  .login-box button:disabled { opacity: 0.5; }
+  .login-errore { font-size: 0.78rem; color: #ff8a8a; min-height: 18px; }
+  .login-link { font-size: 0.76rem; color: #7db8ff; text-decoration: none; text-align: center; margin-top: 4px; }
+  .login-link:hover { text-decoration: underline; }
+  .login-ok { color: #8fdc8f; }
+
+  .caricamento { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 1500; display: none; align-items: center; gap: 10px; background: rgba(20,22,32,0.9); border: 1px solid var(--glass-border); border-radius: 999px; padding: 10px 18px; font-size: 0.8rem; color: #dde0ea; box-shadow: var(--shadow); }
+  .caricamento.active { display: flex; }
+  .spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.15); border-top-color: #7db8ff; border-radius: 50%; animation: giro .8s linear infinite; }
+  @keyframes giro { to { transform: rotate(360deg); } }
+
+  .avviso-pc { font-size: 0.78rem; margin-top: 14px; padding: 9px 12px; border-radius: var(--r-sm); display: none; line-height: 1.4; }
+  .avviso-pc.off { display: block; background: rgba(255,169,77,0.10); border: 1px solid rgba(255,169,77,0.35); color: #ffc077; }
+  .avviso-pc.on  { display: block; background: rgba(109,191,109,0.10); border: 1px solid rgba(109,191,109,0.35); color: #8fdc8f; }
+  .avviso-pc.busy{ display: block; background: rgba(200,125,255,0.10); border: 1px solid rgba(200,125,255,0.35); color: #dba8ff; }
+
+  .note-crm { width: 100%; min-height: 70px; background: var(--inset); border: 1px solid var(--inset-border); color: #dde0ea; padding: 10px 12px; border-radius: var(--r-sm); font-size: 0.83rem; font-family: inherit; resize: vertical; outline: none; }
+  .note-crm:focus { border-color: #7db8ff; }
+
+  .kanban-tabs { display: none; gap: 6px; padding: 0 12px 10px; overflow-x: auto; position: relative; z-index: 1; -webkit-overflow-scrolling: touch; }
+  .kanban-tabs { scrollbar-width: none; }
+  .kanban-tabs::-webkit-scrollbar { display: none; }
+  .kanban-tabs button { flex: 0 0 auto; background: var(--glass); border: 1px solid var(--glass-border); color: #9aa1b2; padding: 7px 12px; border-radius: 999px; font-size: 0.74rem; cursor: pointer; white-space: nowrap; }
+  .kanban-tabs button b { margin-left: 4px; color: #fff; }
+  .kanban-tabs button.attiva { background: rgba(125,184,255,0.2); color: #cfe4ff; border-color: rgba(125,184,255,0.5); }
+
+  /* ===== TELEFONO / TABLET ===== */
+  @media (max-width: 900px) {
+    .stats-view, .ricerca-view.active { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 768px) {
+    .header { padding: 14px 16px 10px; }
+    .header h1 { font-size: 1.05rem; }
+    .stats-bar { gap: 8px; margin-top: 10px; }
+    .stat { padding: 8px 12px; flex: 1 1 calc(33% - 8px); }
+    .stat-num { font-size: 1.15rem; }
+    .stat-label { font-size: 0.58rem; }
+    .filtri { margin: 0 12px 12px; padding: 10px 12px; gap: 8px; }
+    .filtri label { display: none; }
+    .filtri input, .filtri select { flex: 1 1 45%; min-width: 0; font-size: 0.85rem; padding: 9px 10px; }
+    .filtri button { flex: 1 1 auto; padding: 9px 10px; font-size: 0.78rem; }
+    .kanban-tabs { display: flex; }
+    .kanban-view { padding: 0 12px 16px; gap: 10px; scroll-snap-type: x mandatory; min-height: calc(100vh - 330px); }
+    .colonna { flex: 0 0 88vw; scroll-snap-align: start; }
+    .lista-view { padding: 0 12px 16px; overflow-x: auto; }
+    .lista-table { min-width: 860px; }
+    .ricerca-view, .stats-view { padding: 0 12px 16px; gap: 12px; }
+    .ricerca-col { padding: 14px; }
+    #mappa-raggio { height: 240px; }
+    .modal-overlay { padding: 0; }
+    .modal { border-radius: 0; min-height: 100vh; padding: 20px 14px 40px; max-width: none; }
+    .modal-close { top: 10px; right: 10px; width: 36px; height: 36px; }
+    .modal h2 { font-size: 1.05rem; padding-right: 30px; }
+    .info-grid { grid-template-columns: 1fr; gap: 8px; }
+    .outreach-box .btn-copia { margin: 8px 8px 0 0 !important; padding: 10px 14px; font-size: 0.8rem; }
+    .stato-select, .campo-editabile { font-size: 0.95rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-overlay" id="login">
+  <form class="login-box" onsubmit="accedi(event)">
+    <h1>🎬 CRM <span>Videomaker</span></h1>
+    <p>Accedi per vedere e gestire i tuoi lead da qualsiasi dispositivo.</p>
+    <input type="email" id="login-email" placeholder="Email" autocomplete="username" required>
+    <input type="password" id="login-password" placeholder="Password" autocomplete="current-password" required>
+    <button type="submit" id="login-btn">Entra</button>
+    <div class="login-errore" id="login-errore"></div>
+    <a class="login-link" href="#" onclick="chiediLinkPassword(event)">Prima volta o password dimenticata? Ricevi il link via email</a>
+  </form>
+  <form class="login-box" id="nuova-password-box" style="display:none" onsubmit="salvaNuovaPassword(event)">
+    <h1>🔑 Scegli la <span>password</span></h1>
+    <p>Sarà quella con cui entri nel CRM da tutti i tuoi dispositivi.</p>
+    <input type="password" id="np1" placeholder="Nuova password (almeno 8 caratteri)" autocomplete="new-password" minlength="8" required>
+    <input type="password" id="np2" placeholder="Ripeti la password" autocomplete="new-password" minlength="8" required>
+    <button type="submit" id="np-btn">Salva ed entra</button>
+    <div class="login-errore" id="np-errore"></div>
+  </form>
+</div>
+<div class="caricamento" id="caricamento"><div class="spinner"></div><span id="caricamento-testo">Carico i lead…</span></div>
+
+
+<div class="header">
+  <div class="header-riga"><h1>🎬 CRM <span>Videomaker</span> — Lead Dashboard</h1><div class="header-destra"><span class="pill-pc" id="pill-pc" title="Stato del PC fisso (agente di ricerca)">🖥 PC …</span><span class="pill-sync" id="pill-sync">☁ connessione…</span><button class="btn-esci" onclick="esci()" title="Esci">⎋</button></div></div>
+  <div class="stats-bar">
+    <div class="stat"><div class="stat-num" id="stat-totale">0</div><div class="stat-label">Lead Totali</div></div>
+    <div class="stat stat-assoluta"><div class="stat-num" id="stat-assoluta">0</div><div class="stat-label">🔴 Priorità Assoluta</div></div>
+    <div class="stat stat-alta"><div class="stat-num" id="stat-alta">0</div><div class="stat-label">🟠 Priorità Alta</div></div>
+    <div class="stat"><div class="stat-num" id="stat-nuovi">0</div><div class="stat-label">Da Contattare</div></div>
+    <div class="stat"><div class="stat-num" id="stat-clienti">0</div><div class="stat-label">Clienti</div></div>
+    <div class="stat"><div class="stat-num" id="stat-score">0</div><div class="stat-label">Score Medio /100</div></div>
+  </div>
+</div>
+
+<div class="filtri">
+  <label>Cerca:</label>
+  <input type="text" id="filtro-search" placeholder="Nome, città..." oninput="filtra()">
+  <label>Categoria:</label>
+  <select id="filtro-cat" onchange="filtra()"><option value="">Tutte</option></select>
+  <label>Città:</label>
+  <select id="filtro-citta" onchange="filtra()"><option value="">Tutte</option></select>
+  <label>Priorità:</label>
+  <select id="filtro-prio" onchange="filtra()">
+    <option value="">Tutte</option>
+    <option value="ASSOLUTA">🔴 Assoluta (80-100)</option>
+    <option value="ALTA">🟠 Alta (60-79)</option>
+    <option value="NORMALE">🟢 Normale (40-59)</option>
+    <option value="BASSA">⚫ Bassa</option>
+  </select>
+  <button class="btn-top50" id="btn-top50" onclick="toggleTop50()">🎯 TOP 50</button>
+  <button class="btn-lista" onclick="toggleVista()">📋 Lista</button>
+  <button class="btn-esporta" onclick="esportaCSV()">⬇ CSV</button>
+  <button class="btn-ricerca" id="btn-ricerca-toggle" onclick="toggleRicerca()">🔍 Nuova Ricerca</button>
+  <button class="btn-stats" id="btn-stats-toggle" onclick="toggleStats()">📊 Statistiche</button>
+</div>
+
+<!-- NUOVA RICERCA -->
+<div class="ricerca-view" id="ricerca-view">
+  <div class="ricerca-col">
+    <h3>📂 Categorie</h3>
+    <div id="cat-sezioni-container"></div>
+    <input type="text" class="cat-custom-input" id="cat-custom" placeholder="Aggiungi categoria non in lista (es: birrifici craft)...">
+  </div>
+
+  <div class="ricerca-col">
+    <h3>🗺️ Zona di ricerca</h3>
+    <div id="mappa-raggio"></div>
+    <div class="raggio-controls">
+      <span style="font-size:0.76rem;color:#888;">Raggio</span>
+      <input type="range" id="raggio-slider" min="5" max="300" value="150" step="5" oninput="aggiornaRaggio()">
+      <span class="raggio-val" id="raggio-val">150 km</span>
+    </div>
+    <div class="epicentro-label">Centro: <strong id="epicentro-nome-label">Cremona</strong> — trascina il segnaposto sulla mappa per spostarlo</div>
+
+    <div class="num-lead-row">
+      <span style="font-size:0.83rem;color:#ccc;">Quanti lead cercare:</span>
+      <input type="number" id="num-lead" value="150" min="1" max="1000">
+    </div>
+
+    <div class="avviso-pc" id="avviso-pc"></div>
+    <div class="ricerca-azioni">
+      <button class="btn-avvia" id="btn-avvia-ricerca" onclick="avviaRicerca()">▶ Avvia Ricerca</button>
+      <button class="btn-ferma" id="btn-ferma-ricerca" onclick="fermaRicerca()">■ Ferma</button>
+    </div>
+
+    <div class="ricerca-stato" id="ricerca-stato" style="display:none;">
+      <div class="ricerca-stato-riga"><span>Categoria corrente</span><strong id="st-categoria">—</strong></div>
+      <div class="ricerca-stato-riga"><span>Città corrente</span><strong id="st-citta">—</strong></div>
+      <div class="ricerca-stato-riga"><span>Nuovi lead trovati</span><strong id="st-trovati">0 / 0</strong></div>
+      <div class="ricerca-barra"><div class="ricerca-barra-fill" id="ricerca-barra-fill"></div></div>
+      <div class="ricerca-log" id="ricerca-log"></div>
+    </div>
+  </div>
+</div>
+
+<!-- STATISTICHE -->
+<div class="stats-view" id="stats-view">
+  <div class="ricerca-col">
+    <h3>🎯 Imbuto contatti</h3>
+    <canvas id="chart-funnel" height="220"></canvas>
+  </div>
+  <div class="ricerca-col">
+    <h3>📈 Lead trovati nel tempo</h3>
+    <canvas id="chart-tempo" height="220"></canvas>
+  </div>
+  <div class="ricerca-col">
+    <h3>📂 Top categorie</h3>
+    <canvas id="chart-categorie" height="240"></canvas>
+  </div>
+  <div class="ricerca-col">
+    <h3>💬 Canali di contatto usati</h3>
+    <canvas id="chart-canali" height="240"></canvas>
+  </div>
+</div>
+
+<!-- VISTA LISTA -->
+<div class="lista-view" id="lista-view">
+  <table class="lista-table" id="lista-table">
+    <thead>
+      <tr>
+        <th>Score</th><th>Priorità</th><th>Azienda</th><th>Categoria</th><th>Città</th>
+        <th>Telefono</th><th>Email</th><th>Social</th><th>Canale</th><th>Stato</th>
+      </tr>
+    </thead>
+    <tbody id="lista-body"></tbody>
+  </table>
+</div>
+
+<!-- KANBAN -->
+<div class="kanban-tabs" id="kanban-tabs"><button data-stato="da_contattare" class="attiva" onclick="vaiAColonna(this)">Da contattare <b id="tab-cnt-da_contattare">0</b></button><button data-stato="contattato" onclick="vaiAColonna(this)">Contattato <b id="tab-cnt-contattato">0</b></button><button data-stato="risposto" onclick="vaiAColonna(this)">Risposto <b id="tab-cnt-risposto">0</b></button><button data-stato="cliente" onclick="vaiAColonna(this)">Cliente <b id="tab-cnt-cliente">0</b></button><button data-stato="non_interessato" onclick="vaiAColonna(this)">Non int. <b id="tab-cnt-non_interessato">0</b></button></div>
+<div class="kanban-view" id="kanban-view">
+  <div class="colonna col-da-contattare">
+    <div class="col-header"><h3>Da Contattare</h3><span class="col-count" id="cnt-da-contattare">0</span></div>
+    <div class="cards-container" id="col-da_contattare"></div>
+  </div>
+  <div class="colonna col-contattato">
+    <div class="col-header"><h3>Contattato</h3><span class="col-count" id="cnt-contattato">0</span></div>
+    <div class="cards-container" id="col-contattato"></div>
+  </div>
+  <div class="colonna col-risposto">
+    <div class="col-header"><h3>Risposto</h3><span class="col-count" id="cnt-risposto">0</span></div>
+    <div class="cards-container" id="col-risposto"></div>
+  </div>
+  <div class="colonna col-cliente">
+    <div class="col-header"><h3>Cliente</h3><span class="col-count" id="cnt-cliente">0</span></div>
+    <div class="cards-container" id="col-cliente"></div>
+  </div>
+  <div class="colonna col-non-interessato">
+    <div class="col-header"><h3>Non Interessato</h3><span class="col-count" id="cnt-non-interessato">0</span></div>
+    <div class="cards-container" id="col-non_interessato"></div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <button class="modal-close" onclick="chiudiModal()">✕</button>
+    <div id="modal-contenuto"></div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   CRM VIDEOMAKER — versione online (Supabase)
+   Stessa dashboard del PC, ma i dati vivono nel cloud:
+   - login con la tua email
+   - lettura/scrittura sulla tabella `leads`
+   - aggiornamenti in tempo reale fra telefono, tablet e PC
+   - "Nuova ricerca" = richiesta in coda, la esegue il PC fisso quando e' acceso
+   ============================================================ */
+const CFG = window.CRM_CONFIG || {};
+if (!CFG.SUPABASE_URL || !CFG.SUPABASE_ANON_KEY) {
+  alert('config.js non compilato: servono SUPABASE_URL e SUPABASE_ANON_KEY');
+}
+const sb = window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY);
+
+let LEADS = [];
+let LEADS_FILTRATI = [];
+let LEAD_CORRENTE = null;
+let TOP50_ATTIVO = false;
+let VISTA_LISTA = false;
+let BOZZA_CORRENTE = 'generico';
+
+const STATI = ["da_contattare", "contattato", "risposto", "cliente", "non_interessato"];
+const MOBILE = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && window.innerWidth < 900);
+
+// Colonne leggere per la lista/kanban: i testi lunghi (bozze, note) si scaricano
+// solo quando apri la scheda del lead. Cosi' da telefono la pagina parte in fretta.
+const COLONNE_LISTA = [
+  'id','nome_azienda','categoria','citta','indirizzo','telefono','email','sito_web','instagram','facebook',
+  'tiktok','linkedin','youtube','follower_instagram','hanno_video','ultima_data_post','fonte','lead_score',
+  'priorita','canale_consigliato','stato_kanban','contattato_tramite','data_trovato','sessione_id','aggiornato_il',
+].join(',');
+const COLONNE_DETTAGLIO = 'bozza_outreach,bozze_outreach,note_ricerca,note_crm';
+
+// Campi che si possono modificare dalla dashboard
+const CAMPI_MODIFICABILI = new Set([
+  'sito_web','email','telefono','instagram','facebook','linkedin','tiktok','youtube',
+  'indirizzo','citta','stato_kanban','contattato_tramite','note_crm',
+]);
+
+function esc(s) { return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function scoreClass(score) {
+  if (score >= 80) return 'score-assoluta';
+  if (score >= 60) return 'score-alta';
+  if (score >= 40) return 'score-normale';
+  return 'score-bassa';
+}
+
+function prioBadge(p) {
+  const icons = { ASSOLUTA: '🔴', ALTA: '🟠', NORMALE: '🟢', BASSA: '⚫' };
+  return `<span class="prio-badge prio-${p}">${icons[p]||''} ${p}</span>`;
+}
+
+/* ============================================================
+   LOGIN
+   ============================================================ */
+function mostraLogin(visibile) { document.getElementById('login').classList.toggle('active', visibile); }
+
+async function accedi(ev) {
+  ev.preventDefault();
+  const btn = document.getElementById('login-btn'); const err = document.getElementById('login-errore');
+  btn.disabled = true; err.textContent = '';
+  const { error } = await sb.auth.signInWithPassword({
+    email: document.getElementById('login-email').value.trim(),
+    password: document.getElementById('login-password').value,
+  });
+  btn.disabled = false;
+  if (error) { err.textContent = 'Accesso non riuscito: ' + (error.message === 'Invalid login credentials' ? 'email o password errati' : error.message); return; }
+  mostraLogin(false);
+  avviaApp();
+}
+
+// Primo accesso / password dimenticata: Supabase manda un link via email; aprendolo si torna qui
+// e compare il modulo "Scegli la password".
+async function chiediLinkPassword(ev) {
+  ev.preventDefault();
+  const email = document.getElementById('login-email').value.trim();
+  const err = document.getElementById('login-errore');
+  if (!email) { err.className = 'login-errore'; err.textContent = 'Scrivi prima la tua email nel campo qui sopra.'; return; }
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+  err.className = 'login-errore' + (error ? '' : ' login-ok');
+  err.textContent = error ? 'Errore: ' + error.message : 'Email inviata a ' + email + ': apri il link che trovi dentro (controlla anche lo spam).';
+}
+
+function mostraNuovaPassword(visibile) {
+  document.querySelector('#login form.login-box:not(#nuova-password-box)').style.display = visibile ? 'none' : '';
+  document.getElementById('nuova-password-box').style.display = visibile ? '' : 'none';
+  mostraLogin(true);
+}
+
+async function salvaNuovaPassword(ev) {
+  ev.preventDefault();
+  const p1 = document.getElementById('np1').value, p2 = document.getElementById('np2').value;
+  const err = document.getElementById('np-errore');
+  if (p1 !== p2) { err.textContent = 'Le due password non coincidono.'; return; }
+  document.getElementById('np-btn').disabled = true;
+  const { error } = await sb.auth.updateUser({ password: p1 });
+  document.getElementById('np-btn').disabled = false;
+  if (error) { err.textContent = 'Errore: ' + error.message; return; }
+  history.replaceState(null, '', location.pathname);
+  mostraNuovaPassword(false);
+  mostraLogin(false);
+  avviaApp();
+}
+
+async function esci() {
+  if (!confirm('Uscire dal CRM su questo dispositivo?')) return;
+  await sb.auth.signOut();
+  location.reload();
+}
+
+/* ============================================================
+   CARICAMENTO LEAD DAL CLOUD
+   ============================================================ */
+function caricamento(testo) {
+  const el = document.getElementById('caricamento');
+  el.classList.toggle('active', !!testo);
+  if (testo) document.getElementById('caricamento-testo').textContent = testo;
+}
+
+function pillSync(stato, testo) {
+  const p = document.getElementById('pill-sync');
+  p.className = 'pill-sync ' + (stato || '');
+  p.textContent = testo;
+}
+
+async function caricaLeads() {
+  caricamento('Carico i lead…');
+  const PAGINA = 1000;
+  let tutti = [], da = 0;
+  try {
+    while (true) {
+      const { data, error } = await sb.from('leads').select(COLONNE_LISTA)
+        .order('lead_score', { ascending: false }).order('id').range(da, da + PAGINA - 1);
+      if (error) throw error;
+      tutti = tutti.concat(data);
+      caricamento(`Carico i lead… ${tutti.length}`);
+      if (data.length < PAGINA) break;
+      da += PAGINA;
+    }
+    LEADS = tutti;
+    pillSync('ok', '☁ sincronizzato');
+  } catch (e) {
+    console.error(e);
+    pillSync('err', '☁ errore: ' + (e.message || e));
+  }
+  caricamento('');
+  popolaFiltri();
+  filtra();
+}
+
+// Scarica bozze e note di un lead (solo la prima volta che lo apri)
+async function caricaDettaglio(l) {
+  if (l._dettaglio) return l;
+  const { data, error } = await sb.from('leads').select(COLONNE_DETTAGLIO).eq('id', l.id).single();
+  if (!error && data) Object.assign(l, data, { _dettaglio: true });
+  return l;
+}
+
+/* ============================================================
+   TEMPO REALE — un cambio dal telefono compare subito sul tablet/PC
+   ============================================================ */
+let RENDER_TIMER = null;
+function rirenderizzaPresto() {
+  clearTimeout(RENDER_TIMER);
+  RENDER_TIMER = setTimeout(() => { popolaFiltri(); filtra(); }, 150);
+}
+
+function ascoltaCambiamenti() {
+  sb.channel('crm-leads')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'leads' }, payload => {
+      const nuovo = payload.new || {};
+      if (payload.eventType === 'DELETE') {
+        LEADS = LEADS.filter(l => l.id !== payload.old?.id);
+      } else {
+        const idx = LEADS.findIndex(l => l.id === nuovo.id);
+        if (idx === -1) {
+          LEADS.push(Object.assign({}, nuovo, { _dettaglio: true }));
+          LEADS.sort((a, b) => (b.lead_score || 0) - (a.lead_score || 0));
+        } else {
+          // Mantengo i dettagli gia' scaricati: la riga realtime li contiene comunque tutti
+          Object.assign(LEADS[idx], nuovo, { _dettaglio: true });
+          if (LEAD_CORRENTE && LEAD_CORRENTE.id === nuovo.id) aggiornaModalDaRemoto();
+        }
+      }
+      rirenderizzaPresto();
+    })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'impostazioni' }, payload => {
+      if (payload.new?.chiave === 'agente_pc') aggiornaStatoPC(payload.new.valore);
+      if (payload.new?.chiave === 'categorie') CATEGORIE_CLOUD = payload.new.valore;
+    })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'richieste_ricerca' }, payload => {
+      if (RICHIESTA_CORRENTE && payload.new?.id === RICHIESTA_CORRENTE) mostraStatoRicerca(payload.new);
+    })
+    .subscribe(stato => {
+      if (stato === 'SUBSCRIBED') pillSync('ok', '☁ in tempo reale');
+      else if (stato === 'CHANNEL_ERROR' || stato === 'TIMED_OUT') pillSync('err', '☁ tempo reale non attivo');
+    });
+}
+
+// Se la scheda aperta viene modificata da un altro dispositivo, aggiorno solo i controlli
+// (senza rifare tutta la scheda, per non perdere quello che stai scrivendo).
+function aggiornaModalDaRemoto() {
+  const l = LEAD_CORRENTE;
+  const selStato = document.querySelector('.stato-select[data-campo="stato_kanban"]');
+  if (selStato && document.activeElement !== selStato) selStato.value = l.stato_kanban || 'da_contattare';
+  const selCanale = document.querySelector('.stato-select[data-campo="contattato_tramite"]');
+  if (selCanale && document.activeElement !== selCanale) selCanale.value = l.contattato_tramite || '';
+  document.querySelectorAll('.campo-editabile').forEach(inp => {
+    if (document.activeElement !== inp) inp.value = l[inp.dataset.campo] || '';
+  });
+  const note = document.getElementById('note-crm');
+  if (note && document.activeElement !== note) note.value = l.note_crm || '';
+}
+
+/* ============================================================
+   STATO DEL PC FISSO (heartbeat del worker)
+   ============================================================ */
+let STATO_PC = null;
+function pcAcceso() {
+  if (!STATO_PC?.online_il) return false;
+  return (Date.now() - new Date(STATO_PC.online_il).getTime()) < 90 * 1000;   // heartbeat ogni 15s
+}
+function aggiornaStatoPC(valore) {
+  if (valore) STATO_PC = valore;
+  const pill = document.getElementById('pill-pc');
+  const on = pcAcceso();
+  const busy = on && STATO_PC?.ricerca_in_corso;
+  pill.className = 'pill-pc ' + (busy ? 'busy' : on ? 'on' : 'off');
+  pill.textContent = busy ? '🖥 PC: ricerca in corso' : on ? '🖥 PC acceso' : '🖥 PC spento';
+  const avviso = document.getElementById('avviso-pc');
+  if (avviso) {
+    avviso.className = 'avviso-pc ' + (busy ? 'busy' : on ? 'on' : 'off');
+    avviso.textContent = busy ? 'Il PC sta gia' + "'" + ' cercando: la nuova richiesta partira' + "'" + ' subito dopo.'
+      : on ? 'PC fisso acceso e in ascolto: la ricerca parte entro pochi secondi.'
+      : 'PC fisso spento. Puoi comunque mettere in coda la ricerca: partira' + "'" + ' da sola appena lo accendi (con AVVIA_SYNC_CLOUD.bat aperto).';
+  }
+}
+async function caricaStatoPC() {
+  const { data } = await sb.from('impostazioni').select('chiave,valore').in('chiave', ['agente_pc', 'categorie']);
+  (data || []).forEach(r => {
+    if (r.chiave === 'agente_pc') STATO_PC = r.valore;
+    if (r.chiave === 'categorie') CATEGORIE_CLOUD = r.valore;
+  });
+  aggiornaStatoPC();
+}
+setInterval(() => aggiornaStatoPC(), 30 * 1000);
+
+/* ============================================================
+   FILTRI / KANBAN / LISTA (identici alla dashboard del PC)
+   ============================================================ */
+function popolaFiltri() {
+  const catCount = {}, cittaCount = {};
+  LEADS.forEach(l => {
+    if (l.categoria) catCount[l.categoria] = (catCount[l.categoria] || 0) + 1;
+    if (l.citta)     cittaCount[l.citta]   = (cittaCount[l.citta]   || 0) + 1;
+  });
+  const cats  = Object.keys(catCount).sort((a, b) => a.localeCompare(b));
+  const citta = Object.keys(cittaCount).sort((a, b) => cittaCount[b] - cittaCount[a] || a.localeCompare(b));
+  const selCat = document.getElementById('filtro-cat');
+  const selCitta = document.getElementById('filtro-citta');
+  const vCat = selCat.value, vCitta = selCitta.value;
+  selCat.innerHTML = '<option value="">Tutte</option>';
+  selCitta.innerHTML = '<option value="">Tutte</option>';
+  cats.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = `${c} (${catCount[c]})`; selCat.appendChild(o); });
+  citta.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = `${c} (${cittaCount[c]})`; selCitta.appendChild(o); });
+  selCat.value = vCat; selCitta.value = vCitta;
+}
+
+function filtra() {
+  const search = document.getElementById('filtro-search').value.toLowerCase();
+  const cat = document.getElementById('filtro-cat').value;
+  const citta = document.getElementById('filtro-citta').value;
+  const prio = document.getElementById('filtro-prio').value;
+
+  LEADS_FILTRATI = LEADS.filter(l => {
+    if (search && !l.nome_azienda?.toLowerCase().includes(search) && !l.citta?.toLowerCase().includes(search) && !l.categoria?.toLowerCase().includes(search)) return false;
+    if (cat && l.categoria !== cat) return false;
+    if (citta && l.citta !== citta) return false;
+    if (prio && l.priorita !== prio) return false;
+    return true;
+  });
+  if (TOP50_ATTIVO) LEADS_FILTRATI = LEADS_FILTRATI.slice(0, 50);
+
+  if (VISTA_LISTA) renderLista();
+  else renderKanban();
+  aggiornaStats();
+}
+
+function renderKanban() {
+  STATI.forEach(stato => {
+    const col = document.getElementById('col-' + stato);
+    const cnt = document.getElementById('cnt-' + stato.replace('_', '-'));
+    let leads = LEADS_FILTRATI.filter(l => l.stato_kanban === stato);
+    cnt.textContent = leads.length;
+    const tab = document.getElementById('tab-cnt-' + stato); if (tab) tab.textContent = leads.length;
+
+    if (leads.length === 0) { col.innerHTML = '<div class="empty"><div class="empty-icon">📭</div>Nessun lead</div>'; return; }
+
+    // Sul telefono limito le card per colonna (se ne vedono altre cercando/filtrando)
+    const MAX = MOBILE ? 150 : 100000;
+    let html = '';
+    if (stato === 'da_contattare' && !TOP50_ATTIVO) {
+      const top = leads.slice(0, 50);
+      const altri = leads.slice(50, MAX);
+      if (top.length) {
+        html += `<span class="top50-label">⭐ Top ${top.length} per score</span>`;
+        html += top.map(l => cardHTML(l)).join('');
+      }
+      if (altri.length) { html += `<div class="separator-line"></div>`; html += altri.map(l => cardHTML(l)).join(''); }
+    } else {
+      html = leads.slice(0, MAX).map(l => cardHTML(l)).join('');
+    }
+    if (leads.length > MAX) html += `<div class="empty">… e altri ${leads.length - MAX}. Usa cerca/filtri per trovarli.</div>`;
+    col.innerHTML = html;
+  });
+}
+
+function renderLista() {
+  const body = document.getElementById('lista-body');
+  body.innerHTML = LEADS_FILTRATI.map(l => {
+    const sc = l.lead_score || 0;
+    const chips = [l.instagram ? 'IG' : '', l.facebook ? 'FB' : '', l.email ? '✉' : '', l.telefono ? '📞' : ''].filter(Boolean).join(' ');
+    return `<tr onclick="apriModal('${l.id}')">
+      <td><span class="score-badge ${scoreClass(sc)}" style="position:static;display:inline-flex">${sc}</span></td>
+      <td>${prioBadge(l.priorita || 'BASSA')}</td>
+      <td style="font-weight:600;color:#fff">${esc(l.nome_azienda)}</td>
+      <td style="color:#888;font-size:0.78rem">${esc(l.categoria)}</td>
+      <td style="color:#666;font-size:0.78rem">${esc(l.citta)}</td>
+      <td style="font-size:0.78rem">${esc(l.telefono) || '—'}</td>
+      <td style="font-size:0.78rem;color:#6dbf6d">${esc(l.email) || '—'}</td>
+      <td style="font-size:0.75rem;color:#aaa">${chips}</td>
+      <td style="font-size:0.75rem;color:#e94560">${esc(l.canale_consigliato) || '—'}</td>
+      <td style="font-size:0.75rem;color:#888">${l.stato_kanban?.replace('_',' ') || ''}</td>
+    </tr>`;
+  }).join('');
+}
+
+function cardHTML(l) {
+  const score = l.lead_score || 0;
+  const prio = l.priorita || 'BASSA';
+  const chips = [];
+  if (l.instagram) chips.push('<span class="social-chip chip-ig">IG</span>');
+  if (l.facebook) chips.push('<span class="social-chip chip-fb">FB</span>');
+  if (l.email) chips.push('<span class="social-chip chip-email">✉</span>');
+  if (l.telefono) chips.push('<span class="social-chip chip-tel">📞</span>');
+  if (l.youtube) chips.push('<span class="social-chip chip-yt">YT</span>');
+  if (l.linkedin) chips.push('<span class="social-chip chip-li">LI</span>');
+  if (l.tiktok) chips.push('<span class="social-chip chip-tk">TK</span>');
+  return `<div class="card" onclick="apriModal('${l.id}')">
+    <div class="score-badge ${scoreClass(score)}">${score}</div>
+    ${prioBadge(prio)}
+    <div class="card-nome">${esc(l.nome_azienda)}</div>
+    <div class="card-cat">${esc(l.categoria)}</div>
+    <div class="card-citta">📍 ${esc(l.citta)}</div>
+    <div class="card-social">${chips.join('')}</div>
+    <div class="canale-tag">→ <strong>${esc(l.canale_consigliato) || '—'}</strong></div>
+    ${l.contattato_tramite ? `<div class="canale-tag">✓ Contattato su <strong>${esc(l.contattato_tramite)}</strong></div>` : ''}
+  </div>`;
+}
+
+function toggleTop50() {
+  TOP50_ATTIVO = !TOP50_ATTIVO;
+  document.getElementById('btn-top50').classList.toggle('active', TOP50_ATTIVO);
+  filtra();
+}
+
+function toggleVista() {
+  VISTA_LISTA = !VISTA_LISTA;
+  document.getElementById('lista-view').classList.toggle('active', VISTA_LISTA);
+  document.getElementById('kanban-view').classList.toggle('hidden', VISTA_LISTA);
+  document.getElementById('kanban-tabs').style.display = (VISTA_LISTA || !MOBILE) ? 'none' : 'flex';
+  if (VISTA_LISTA) renderLista(); else renderKanban();
+}
+
+// Telefono: le linguette sopra il kanban portano alla colonna scelta
+function vaiAColonna(btn) {
+  document.querySelectorAll('#kanban-tabs button').forEach(b => b.classList.toggle('attiva', b === btn));
+  const col = document.getElementById('col-' + btn.dataset.stato)?.closest('.colonna');
+  if (col) col.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
+}
+document.getElementById('kanban-view').addEventListener('scroll', () => {
+  if (!MOBILE) return;
+  const kv = document.getElementById('kanban-view');
+  const idx = Math.round(kv.scrollLeft / (kv.querySelector('.colonna')?.offsetWidth + 10 || 1));
+  document.querySelectorAll('#kanban-tabs button').forEach((b, i) => b.classList.toggle('attiva', i === idx));
+}, { passive: true });
+
+/* ============================================================
+   SCHEDA LEAD (modal)
+   ============================================================ */
+function campoEditabile(label, campo, valore, apribile) {
+  const v = valore || '';
+  const apriBtn = (apribile && v) ? `<a href="${esc(v.startsWith('http')?v:'https://'+v)}" target="_blank" rel="noopener" title="Apri" style="margin-left:6px;text-decoration:none;">↗</a>` : '';
+  const telBtn = (campo === 'telefono' && v && MOBILE) ? `<a href="tel:${esc(v.replace(/\s+/g,''))}" title="Chiama" style="margin-left:6px;text-decoration:none;">📞</a>` : '';
+  return `<div class="info-item">
+    <div class="info-label">${label}</div>
+    <div style="display:flex;align-items:center;">
+      <input class="campo-editabile" data-campo="${campo}" value="${esc(v)}" placeholder="—" onblur="salvaCampoLead('${campo}', this.value)" onkeydown="if(event.key==='Enter') this.blur()">
+      ${apriBtn}${telBtn}
+    </div>
+  </div>`;
+}
+
+async function apriModal(id) {
+  const l = LEADS.find(x => x.id === id);
+  if (!l) return;
+  LEAD_CORRENTE = l;
+  document.getElementById('modal').classList.add('active');
+  document.getElementById('modal-contenuto').innerHTML = '<div class="empty"><div class="spinner"></div>Carico la scheda…</div>';
+  await caricaDettaglio(l);
+  if (LEAD_CORRENTE !== l) return;   // nel frattempo ne hai aperto un altro
+  const score = l.lead_score || 0;
+  const prio = l.priorita || 'BASSA';
+
+  document.getElementById('modal-contenuto').innerHTML = `
+    <div class="modal-header">
+      <div class="modal-score-circle ${scoreClass(score)}" style="border: 2px solid currentColor">
+        <div style="font-size:1.2rem;font-weight:800">${score}</div>
+        <div style="font-size:0.55rem;opacity:0.8">/100</div>
+      </div>
+      <div>
+        ${prioBadge(prio)}
+        <h2>${esc(l.nome_azienda)}</h2>
+        <div class="modal-cat">${esc(l.categoria)} · ${esc(l.citta)} · ${esc(l.data_trovato)}</div>
+      </div>
+    </div>
+
+    <div class="info-grid">
+      ${campoEditabile('Telefono', 'telefono', l.telefono, false)}
+      ${campoEditabile('Email', 'email', l.email, false)}
+      ${campoEditabile('Sito Web', 'sito_web', l.sito_web, true)}
+      ${campoEditabile('Indirizzo', 'indirizzo', l.indirizzo, false)}
+      ${campoEditabile('Instagram', 'instagram', l.instagram, true)}
+      ${campoEditabile('Facebook', 'facebook', l.facebook, true)}
+      ${campoEditabile('LinkedIn', 'linkedin', l.linkedin, true)}
+      ${campoEditabile('TikTok', 'tiktok', l.tiktok, true)}
+      ${campoEditabile('YouTube', 'youtube', l.youtube, true)}
+      <div class="info-item"><div class="info-label">Canale Consigliato</div><div class="info-val" style="color:#e94560;font-weight:700">${esc(l.canale_consigliato) || '—'}</div></div>
+    </div>
+    <div id="salva-campo-avviso" style="font-size:0.72rem;color:#8fdc8f;height:16px;margin:-8px 0 8px;"></div>
+
+    ${l.note_ricerca && l.note_ricerca !== 'Solo dati base trovati' ? `
+    <div class="note-box">
+      <div class="info-label" style="margin-bottom:5px">Note</div>
+      <p>${esc(l.note_ricerca)}</p>
+    </div>` : ''}
+
+    <div class="outreach-box">
+      <h4>✍ Messaggio di contatto — scegli quello adatto al profilo</h4>
+      <div class="outreach-tabs" id="outreach-tabs">${linguetteOutreach(l)}</div>
+      <div class="outreach-oggetto" id="outreach-oggetto" hidden></div>
+      <div class="outreach-text" id="outreach-text"></div>
+      <button class="btn-copia" onclick="copiaOutreach()">📋 Copia Messaggio</button>
+      ${l.telefono ? `<button class="btn-copia" style="background:rgba(37,211,102,0.18);color:#5fe58a;border-color:rgba(37,211,102,0.4);margin-left:8px" onclick="apriWhatsApp()">💬 Apri WhatsApp</button>` : ''}
+      ${l.instagram ? `<button class="btn-copia" style="background:#c13584;margin-left:8px" onclick="apriDM()">📩 Copia + Apri DM Instagram</button>` : ''}
+      ${l.email ? `<button class="btn-copia" style="background:rgba(125,184,255,0.16);color:#9ecbff;border-color:rgba(125,184,255,0.4);margin-left:8px" onclick="apriEmail()">✉ Scrivi Email${MOBILE ? '' : ' (Gmail)'}</button>` : ''}
+    </div>
+
+    <div class="info-grid">
+      <div class="info-item">
+        <div class="info-label" style="margin-bottom:5px">Stato CRM</div>
+        <select class="stato-select" data-campo="stato_kanban" onchange="cambiaStato(this.value)">
+          <option value="da_contattare" ${l.stato_kanban==='da_contattare'?'selected':''}>Da Contattare</option>
+          <option value="contattato" ${l.stato_kanban==='contattato'?'selected':''}>Contattato</option>
+          <option value="risposto" ${l.stato_kanban==='risposto'?'selected':''}>Risposto</option>
+          <option value="cliente" ${l.stato_kanban==='cliente'?'selected':''}>Cliente</option>
+          <option value="non_interessato" ${l.stato_kanban==='non_interessato'?'selected':''}>Non Interessato</option>
+        </select>
+      </div>
+      <div class="info-item">
+        <div class="info-label" style="margin-bottom:5px">Contattato tramite</div>
+        <select class="stato-select" data-campo="contattato_tramite" onchange="cambiaCanaleContatto(this.value)">
+          <option value="" ${!l.contattato_tramite?'selected':''}>—</option>
+          <option value="WhatsApp" ${l.contattato_tramite==='WhatsApp'?'selected':''}>💬 WhatsApp</option>
+          <option value="Instagram" ${l.contattato_tramite==='Instagram'?'selected':''}>📷 Instagram</option>
+          <option value="Facebook" ${l.contattato_tramite==='Facebook'?'selected':''}>👤 Facebook</option>
+          <option value="LinkedIn" ${l.contattato_tramite==='LinkedIn'?'selected':''}>💼 LinkedIn</option>
+          <option value="Email" ${l.contattato_tramite==='Email'?'selected':''}>✉ Email</option>
+          <option value="Telefono" ${l.contattato_tramite==='Telefono'?'selected':''}>📞 Telefono</option>
+          <option value="Di persona" ${l.contattato_tramite==='Di persona'?'selected':''}>🤝 Di persona</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="info-item" style="margin-bottom:16px">
+      <div class="info-label" style="margin-bottom:6px">📝 Appunti (visibili su tutti i dispositivi)</div>
+      <textarea class="note-crm" id="note-crm" placeholder="Es. richiamare lunedì, interessati a un reel per l'apertura..." onblur="salvaCampoLead('note_crm', this.value)">${esc(l.note_crm)}</textarea>
+    </div>
+  `;
+  mostraBozza(bozzaIniziale(l));
+}
+
+function chiudiModal() { document.getElementById('modal').classList.remove('active'); LEAD_CORRENTE = null; }
+document.getElementById('modal').addEventListener('click', e => { if (e.target === document.getElementById('modal')) chiudiModal(); });
+
+/* ------------------------------------------------------------
+   SALVATAGGIO SUL CLOUD
+   ------------------------------------------------------------ */
+async function salvaCampoLead(campo, valore) {
+  if (!LEAD_CORRENTE || !CAMPI_MODIFICABILI.has(campo)) return;
+  const l = LEAD_CORRENTE;
+  if (campo === 'contattato_tramite' && !valore) valore = null;
+  if ((l[campo] ?? '') === (valore ?? '')) return;     // niente da salvare
+  l[campo] = valore;
+  filtra();
+  const avviso = document.getElementById('salva-campo-avviso');
+  const { error } = await sb.from('leads').update({ [campo]: valore, aggiornato_da: 'dashboard' }).eq('id', l.id);
+  if (avviso) {
+    avviso.textContent = error ? '⚠ Non salvato: ' + error.message : '✓ Salvato su tutti i dispositivi';
+    avviso.style.color = error ? '#ffc077' : '#8fdc8f';
+    setTimeout(() => { if (avviso) avviso.textContent = ''; }, 2500);
+  }
+  if (error) { pillSync('err', '☁ errore salvataggio'); console.error(error); }
+}
+
+function cambiaStato(nuovoStato) { salvaCampoLead('stato_kanban', nuovoStato); }
+function cambiaCanaleContatto(canale) { salvaCampoLead('contattato_tramite', canale); }
+
+/* ------------------------------------------------------------
+   MESSAGGI DI CONTATTO: copia, WhatsApp, Instagram, Email
+   ------------------------------------------------------------ */
+const ETICHETTE_BOZZE = {
+  generico: '1 · Primo contatto',
+  social:   '2 · Non fa ancora social',
+  email:    '3 · Email (aziende strutturate)',
+  inviato:  '✓ Messaggio già inviato',
+};
+const EMAIL_MITTENTE = CFG.EMAIL_MITTENTE || 'videomakercristianleoni@gmail.com';
+
+function bozzaIniziale(l) {
+  return (l.stato_kanban && l.stato_kanban !== 'da_contattare' && haMessaggioInviato(l)) ? 'inviato' : 'generico';
+}
+function haMessaggioInviato(l) {
+  const b = l.bozze_outreach || {};
+  const t = (l.bozza_outreach || '').trim();
+  return !!t && t !== (b.generico||'').trim() && t !== (b.social||'').trim() && t !== (b.email||'').trim();
+}
+function linguetteOutreach(l) {
+  const b = l.bozze_outreach;
+  if (!b) return '';
+  const chiavi = ['generico', 'social', 'email'];
+  if (haMessaggioInviato(l)) chiavi.unshift('inviato');
+  const iniziale = bozzaIniziale(l);
+  return chiavi.map(k =>
+    `<button class="outreach-tab${k===iniziale?' attiva':''}${k==='inviato'?' inviato':''}" data-bozza="${k}" onclick="mostraBozza('${k}')">${ETICHETTE_BOZZE[k]}</button>`
+  ).join('');
+}
+function mostraBozza(chiave) {
+  const l = LEAD_CORRENTE; if (!l) return;
+  const b = l.bozze_outreach || {};
+  let testo = '', oggetto = '';
+  if (chiave === 'inviato')       testo = l.bozza_outreach || '';
+  else if (chiave === 'email')    { testo = b.email || ''; oggetto = b.email_oggetto || ''; }
+  else                            testo = b[chiave] || '';
+  if (!b.generico && !testo) testo = l.bozza_outreach || '—';
+  document.getElementById('outreach-text').textContent = testo || '—';
+  const og = document.getElementById('outreach-oggetto');
+  og.hidden = !oggetto;
+  og.innerHTML = oggetto ? `<b>Oggetto:</b> ${esc(oggetto)}` : '';
+  document.querySelectorAll('.outreach-tab').forEach(t => t.classList.toggle('attiva', t.dataset.bozza === chiave));
+  BOZZA_CORRENTE = chiave;
+}
+
+function numeroWhatsapp(tel) {
+  let n = (tel || '').replace(/[^\d+]/g, '');
+  if (n.startsWith('+')) return n.slice(1);
+  if (n.startsWith('39') && n.length > 10) return n;
+  return '39' + n;
+}
+
+// WhatsApp col messaggio gia' scritto. Sul telefono apre l'app; sul PC l'app desktop.
+// L'invio resta un tuo clic.
+function apriWhatsApp() {
+  if (!LEAD_CORRENTE || !LEAD_CORRENTE.telefono) return;
+  const numero = numeroWhatsapp(LEAD_CORRENTE.telefono);
+  const testo = encodeURIComponent(document.getElementById('outreach-text').textContent);
+  if (MOBILE) window.open(`https://wa.me/${numero}?text=${testo}`, '_blank');
+  else window.location.href = `whatsapp://send?phone=${numero}&text=${testo}`;
+}
+
+// Email: sul PC apre Gmail web con il tuo account; sul telefono l'app di posta (Gmail).
+function apriEmail() {
+  const l = LEAD_CORRENTE; if (!l || !l.email) return;
+  const b = l.bozze_outreach || {};
+  const oggetto = b.email_oggetto || 'Una proposta per la vostra comunicazione video';
+  const corpo   = b.email || document.getElementById('outreach-text').textContent;
+  if (MOBILE) {
+    window.location.href = `mailto:${encodeURIComponent(l.email)}?subject=${encodeURIComponent(oggetto)}&body=${encodeURIComponent(corpo)}`;
+    return;
+  }
+  const url = 'https://mail.google.com/mail/?view=cm&fs=1'
+    + '&authuser=' + encodeURIComponent(EMAIL_MITTENTE)
+    + '&to=' + encodeURIComponent(l.email)
+    + '&su=' + encodeURIComponent(oggetto)
+    + '&body=' + encodeURIComponent(corpo);
+  window.open(url, '_blank');
+}
+
+async function copiaTesto(t) {
+  try { await navigator.clipboard.writeText(t); return true; }
+  catch (e) {
+    // iOS vecchi / contesti senza clipboard API
+    const ta = document.createElement('textarea'); ta.value = t; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    let ok = false; try { ok = document.execCommand('copy'); } catch (_) {}
+    document.body.removeChild(ta); return ok;
+  }
+}
+async function copiaOutreach() {
+  const t = document.getElementById('outreach-text').textContent;
+  const ok = await copiaTesto(t);
+  const btn = document.querySelector('.btn-copia');
+  btn.textContent = ok ? '✅ Copiato!' : '⚠ Copia a mano';
+  setTimeout(() => btn.textContent = '📋 Copia Messaggio', 2000);
+}
+
+// Instagram: copia il messaggio e apre la chat DM (sul telefono si apre l'app Instagram).
+async function apriDM() {
+  const t = document.getElementById('outreach-text').textContent;
+  const ig = (LEAD_CORRENTE && LEAD_CORRENTE.instagram) || '';
+  const user = ig.replace(/^https?:\/\/(www\.)?instagram\.com\//i, '').replace(/[/?].*$/, '').replace(/^@/, '').trim();
+  if (!user) { alert('Questo lead non ha un profilo Instagram — usa email o telefono.'); return; }
+  // Sul telefono apro subito (i browser bloccano i popup aperti dopo un await), la copia va in parallelo
+  const finestra = MOBILE ? null : window.open('', '_blank');
+  const ok = await copiaTesto(t);
+  const url = 'https://ig.me/m/' + user;
+  if (finestra) finestra.location.href = url; else window.location.href = url;
+  if (!ok) alert('Non sono riuscito a copiare il messaggio: usa "Copia Messaggio" e incollalo nella chat.');
+}
+
+/* ============================================================
+   STATISTICHE + CSV (identici)
+   ============================================================ */
+function aggiornaStats() {
+  document.getElementById('stat-totale').textContent = LEADS_FILTRATI.length;
+  document.getElementById('stat-assoluta').textContent = LEADS_FILTRATI.filter(l => l.priorita === 'ASSOLUTA').length;
+  document.getElementById('stat-alta').textContent = LEADS_FILTRATI.filter(l => l.priorita === 'ALTA').length;
+  document.getElementById('stat-nuovi').textContent = LEADS_FILTRATI.filter(l => l.stato_kanban === 'da_contattare').length;
+  document.getElementById('stat-clienti').textContent = LEADS_FILTRATI.filter(l => l.stato_kanban === 'cliente').length;
+  const scores = LEADS_FILTRATI.map(l => l.lead_score || 0);
+  const media = scores.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) : 0;
+  document.getElementById('stat-score').textContent = media;
+}
+
+function esportaCSV() {
+  const cols = ['lead_score','priorita','nome_azienda','categoria','citta','telefono','email','sito_web','instagram','facebook','linkedin','canale_consigliato','stato_kanban','contattato_tramite'];
+  const righe = [cols.join(',')];
+  LEADS_FILTRATI.forEach(l => righe.push(cols.map(c => `"${(l[c]||'').toString().replace(/"/g,'""')}"`).join(',')));
+  const blob = new Blob([righe.join('\n')], {type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `leads_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+const CANALE_COLORI = { WhatsApp: '#5fe58a', Instagram: '#dba8ff', Facebook: '#a3b3ff', LinkedIn: '#8fd0ff', Email: '#8fdc8f', Telefono: '#ffc966', 'Di persona': '#ff8a8a' };
+let GRAFICI = {};
+
+function nascondiViste() {
+  ['ricerca-view', 'stats-view', 'lista-view'].forEach(id => document.getElementById(id).classList.remove('active'));
+  ['btn-ricerca-toggle', 'btn-stats-toggle'].forEach(id => document.getElementById(id).classList.remove('active'));
+  document.getElementById('kanban-view').classList.add('hidden');
+  document.getElementById('kanban-tabs').style.display = 'none';
+}
+function mostraKanbanOLista() {
+  if (VISTA_LISTA) { document.getElementById('lista-view').classList.add('active'); renderLista(); }
+  else { document.getElementById('kanban-view').classList.remove('hidden'); document.getElementById('kanban-tabs').style.display = MOBILE ? 'flex' : 'none'; renderKanban(); }
+}
+
+function toggleStats() {
+  const view = document.getElementById('stats-view');
+  const attiva = !view.classList.contains('active');
+  nascondiViste();
+  if (attiva) { view.classList.add('active'); document.getElementById('btn-stats-toggle').classList.add('active'); renderCharts(); }
+  else mostraKanbanOLista();
+}
+
+function renderCharts() {
+  const glassGrid = 'rgba(255,255,255,0.08)';
+  Chart.defaults.color = '#9aa1b2';
+  Chart.defaults.borderColor = glassGrid;
+  Chart.defaults.font.family = "-apple-system, 'Segoe UI', sans-serif";
+  Object.values(GRAFICI).forEach(c => c && c.destroy());
+
+  const STATI_LABEL = { da_contattare: 'Da Contattare', contattato: 'Contattato', risposto: 'Risposto', cliente: 'Cliente', non_interessato: 'Non Interessato' };
+  const STATI_COLORI = ['#a3b3ff', '#8fdc8f', '#ffc966', '#dba8ff', '#767d8c'];
+  const contiStati = STATI.map(s => LEADS.filter(l => l.stato_kanban === s).length);
+  GRAFICI.funnel = new Chart(document.getElementById('chart-funnel'), {
+    type: 'bar',
+    data: { labels: STATI.map(s => STATI_LABEL[s]), datasets: [{ data: contiStati, backgroundColor: STATI_COLORI, borderRadius: 8, maxBarThickness: 40 }] },
+    options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { grid: { color: glassGrid } }, y: { grid: { display: false } } } }
+  });
+
+  const perGiorno = {};
+  LEADS.forEach(l => { if (l.data_trovato) perGiorno[l.data_trovato] = (perGiorno[l.data_trovato] || 0) + 1; });
+  const giorni = Object.keys(perGiorno).sort().slice(-21);
+  GRAFICI.tempo = new Chart(document.getElementById('chart-tempo'), {
+    type: 'line',
+    data: { labels: giorni.map(g => g.slice(5)), datasets: [{ data: giorni.map(g => perGiorno[g]), borderColor: '#5ab4ff', backgroundColor: 'rgba(90,180,255,0.18)', fill: true, tension: 0.35, pointRadius: 3 }] },
+    options: { plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { grid: { color: glassGrid }, beginAtZero: true } } }
+  });
+
+  const perCat = {};
+  LEADS.forEach(l => { if (l.categoria) perCat[l.categoria] = (perCat[l.categoria] || 0) + 1; });
+  const topCat = Object.entries(perCat).sort((a, b) => b[1] - a[1]).slice(0, 10);
+  GRAFICI.categorie = new Chart(document.getElementById('chart-categorie'), {
+    type: 'bar',
+    data: { labels: topCat.map(c => c[0]), datasets: [{ data: topCat.map(c => c[1]), backgroundColor: '#c87dff', borderRadius: 6, maxBarThickness: 28 }] },
+    options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { grid: { color: glassGrid } }, y: { grid: { display: false } } } }
+  });
+
+  const perCanale = {};
+  LEADS.forEach(l => { if (l.contattato_tramite) perCanale[l.contattato_tramite] = (perCanale[l.contattato_tramite] || 0) + 1; });
+  const canali = Object.keys(perCanale);
+  if (canali.length) {
+    GRAFICI.canali = new Chart(document.getElementById('chart-canali'), {
+      type: 'doughnut',
+      data: { labels: canali, datasets: [{ data: canali.map(c => perCanale[c]), backgroundColor: canali.map(c => CANALE_COLORI[c] || '#888') }] },
+      options: { plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 12 } } } }
+    });
+  } else {
+    const ctx = document.getElementById('chart-canali').getContext('2d');
+    ctx.font = '13px sans-serif'; ctx.fillStyle = '#767d8c'; ctx.textAlign = 'center';
+    ctx.fillText('Nessun lead segnato come "contattato tramite..." ancora', ctx.canvas.width / 2, ctx.canvas.height / 2);
+  }
+}
+
+/* ============================================================
+   NUOVA RICERCA — va in coda sul cloud, la esegue il PC fisso
+   ============================================================ */
+const CREMONA = { lat: 45.220864, lng: 10.037038, nome: "Cremona" };
+let CATEGORIE_SELEZIONATE = new Set();
+let CATEGORIE_CLOUD = null;
+let MAPPA = null, MARKER_EPICENTRO = null, CERCHIO_RAGGIO = null;
+let EPICENTRO = { ...CREMONA };
+let RICERCA_VISTA_INIZIALIZZATA = false;
+let RICHIESTA_CORRENTE = null;
+let POLL_INTERVALLO = null;
+
+function toggleRicerca() {
+  const view = document.getElementById('ricerca-view');
+  const attiva = !view.classList.contains('active');
+  nascondiViste();
+  if (attiva) {
+    view.classList.add('active');
+    document.getElementById('btn-ricerca-toggle').classList.add('active');
+    if (!RICERCA_VISTA_INIZIALIZZATA) { caricaCategorie(); initMappa(); RICERCA_VISTA_INIZIALIZZATA = true; }
+    else setTimeout(() => MAPPA && MAPPA.invalidateSize(), 50);
+    aggiornaStatoPC();
+    riprendiRicercaInCorso();
+  } else mostraKanbanOLista();
+}
+
+function caricaCategorie() {
+  const container = document.getElementById('cat-sezioni-container');
+  const dati = CATEGORIE_CLOUD;
+  if (!dati || !dati.sezioni) {
+    container.innerHTML = '<p style="color:#9aa1b2;font-size:0.8rem;">Elenco categorie non ancora pubblicato dal PC: accendilo una volta con AVVIA_SYNC_CLOUD.bat. Puoi comunque scrivere una categoria qui sotto.</p>';
+    return;
+  }
+  container.innerHTML = '';
+  Object.entries(dati.sezioni).forEach(([nomeSezione, categorie]) => {
+    const nomiCat = categorie.map(q => { const t = (dati.categorie || []).find(c => c.query === q); return t ? t.nome : q; });
+    const div = document.createElement('div');
+    div.className = 'sezione-cat';
+    div.innerHTML = `<div class="sezione-cat-titolo">${esc(nomeSezione)}</div>
+      <div class="chip-cat-wrap">${nomiCat.map(n => `<span class="chip-cat" data-cat="${esc(n)}" onclick="toggleCategoria(this)">${esc(n)}</span>`).join('')}</div>`;
+    container.appendChild(div);
+  });
+}
+
+function toggleCategoria(el) {
+  const cat = el.dataset.cat;
+  if (CATEGORIE_SELEZIONATE.has(cat)) { CATEGORIE_SELEZIONATE.delete(cat); el.classList.remove('selezionata'); }
+  else { CATEGORIE_SELEZIONATE.add(cat); el.classList.add('selezionata'); }
+}
+
+function initMappa() {
+  MAPPA = L.map('mappa-raggio').setView([CREMONA.lat, CREMONA.lng], 7);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors', maxZoom: 18 }).addTo(MAPPA);
+  MARKER_EPICENTRO = L.marker([CREMONA.lat, CREMONA.lng], { draggable: true }).addTo(MAPPA);
+  CERCHIO_RAGGIO = L.circle([CREMONA.lat, CREMONA.lng], { radius: 150000, color: '#c87dff', fillColor: '#c87dff', fillOpacity: 0.12, weight: 2 }).addTo(MAPPA);
+  MARKER_EPICENTRO.on('drag', e => aggiornaEpicentro(e.target.getLatLng()));
+  MARKER_EPICENTRO.on('dragend', e => aggiornaEpicentro(e.target.getLatLng(), true));
+  MAPPA.on('click', e => { MARKER_EPICENTRO.setLatLng(e.latlng); aggiornaEpicentro(e.latlng, true); });
+  setTimeout(() => MAPPA.invalidateSize(), 100);
+}
+
+function aggiornaEpicentro(latlng, cercaNome) {
+  EPICENTRO.lat = latlng.lat; EPICENTRO.lng = latlng.lng;
+  CERCHIO_RAGGIO.setLatLng(latlng);
+  if (cercaNome) {
+    EPICENTRO.nome = `${latlng.lat.toFixed(3)}, ${latlng.lng.toFixed(3)}`;
+    document.getElementById('epicentro-nome-label').textContent = EPICENTRO.nome;
+    fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latlng.lat}&lon=${latlng.lng}&format=json&zoom=10`)
+      .then(r => r.json())
+      .then(d => {
+        const nome = d?.address?.town || d?.address?.city || d?.address?.village || d?.address?.municipality;
+        if (nome) { EPICENTRO.nome = nome; document.getElementById('epicentro-nome-label').textContent = nome; }
+      }).catch(() => {});
+  }
+}
+
+function aggiornaRaggio() {
+  const km = parseInt(document.getElementById('raggio-slider').value, 10);
+  document.getElementById('raggio-val').textContent = `${km} km`;
+  if (CERCHIO_RAGGIO) CERCHIO_RAGGIO.setRadius(km * 1000);
+  if (MAPPA) { const zoom = km > 150 ? 6 : km > 70 ? 7 : km > 30 ? 8 : 9; MAPPA.setView([EPICENTRO.lat, EPICENTRO.lng], zoom); }
+}
+
+async function avviaRicerca() {
+  const custom = document.getElementById('cat-custom').value.trim();
+  const categorie = [...CATEGORIE_SELEZIONATE];
+  if (custom) categorie.push(custom);
+  const km = parseInt(document.getElementById('raggio-slider').value, 10);
+  const numLead = parseInt(document.getElementById('num-lead').value, 10) || 150;
+
+  const { data, error } = await sb.from('richieste_ricerca')
+    .insert({ categorie: categorie.join(', '), zona: String(km), numero_lead: numLead, epicentro: EPICENTRO })
+    .select().single();
+  if (error) { alert('Impossibile mettere in coda la ricerca: ' + error.message); return; }
+  RICHIESTA_CORRENTE = data.id;
+  mostraStatoRicerca(data);
+  avviaPollRicerca();
+}
+
+async function fermaRicerca() {
+  if (!RICHIESTA_CORRENTE) return;
+  const { data } = await sb.from('richieste_ricerca').select('stato').eq('id', RICHIESTA_CORRENTE).single();
+  const nuovo = (data?.stato === 'in_attesa') ? 'fermata' : 'da_fermare';   // se il PC non l'ha ancora presa, basta annullarla
+  await sb.from('richieste_ricerca').update({ stato: nuovo }).eq('id', RICHIESTA_CORRENTE);
+  document.getElementById('btn-ferma-ricerca').textContent = nuovo === 'fermata' ? '■ Annullata' : '■ Fermo…';
+}
+
+// Se riapri la pagina mentre una ricerca e' in coda o in corso, la ritrovi
+async function riprendiRicercaInCorso() {
+  if (RICHIESTA_CORRENTE) return;
+  const { data } = await sb.from('richieste_ricerca').select('*')
+    .in('stato', ['in_attesa', 'in_corso', 'da_fermare']).order('creata_il', { ascending: false }).limit(1);
+  if (data && data.length) { RICHIESTA_CORRENTE = data[0].id; mostraStatoRicerca(data[0]); avviaPollRicerca(); }
+}
+
+function avviaPollRicerca() {
+  clearInterval(POLL_INTERVALLO);
+  POLL_INTERVALLO = setInterval(async () => {
+    if (!RICHIESTA_CORRENTE) { clearInterval(POLL_INTERVALLO); return; }
+    const { data } = await sb.from('richieste_ricerca').select('*').eq('id', RICHIESTA_CORRENTE).single();
+    if (data) mostraStatoRicerca(data);
+  }, 5000);
+}
+
+function mostraStatoRicerca(r) {
+  const box = document.getElementById('ricerca-stato');
+  box.style.display = 'block';
+  const attiva = ['in_attesa', 'in_corso', 'da_fermare'].includes(r.stato);
+  document.getElementById('btn-avvia-ricerca').disabled = attiva;
+  const ferma = document.getElementById('btn-ferma-ricerca');
+  ferma.style.display = attiva ? 'inline-block' : 'none';
+  if (r.stato !== 'da_fermare') ferma.textContent = r.stato === 'in_attesa' ? '✕ Annulla richiesta' : '■ Ferma';
+
+  document.getElementById('st-categoria').textContent = r.categoria_corrente || (r.stato === 'in_attesa' ? 'in coda' : '—');
+  document.getElementById('st-citta').textContent = r.citta_corrente || '—';
+  document.getElementById('st-trovati').textContent = `${r.nuovi_trovati || 0} / ${r.obiettivo || r.numero_lead || '?'}`;
+  const obiettivo = r.obiettivo || r.numero_lead || 0;
+  document.getElementById('ricerca-barra-fill').style.width = (obiettivo ? Math.min(100, Math.round(100 * (r.nuovi_trovati || 0) / obiettivo)) : 0) + '%';
+
+  const ETICH = { in_attesa: pcAcceso() ? '⏳ In coda: il PC la prende tra pochi secondi…' : '⏳ In coda: partirà appena accendi il PC fisso.',
+                  in_corso: '▶ Ricerca in corso sul PC', da_fermare: '■ Sto fermando la ricerca…',
+                  completata: '✔ Ricerca completata', fermata: '■ Ricerca fermata', errore: '⚠ Ricerca terminata con errore' };
+  const logEl = document.getElementById('ricerca-log');
+  logEl.textContent = (ETICH[r.stato] || r.stato) + '\n' + (r.log || '');
+  logEl.scrollTop = logEl.scrollHeight;
+
+  if (!attiva) { clearInterval(POLL_INTERVALLO); RICHIESTA_CORRENTE = null; }
+}
+
+/* ============================================================
+   AVVIO
+   ============================================================ */
+let APP_AVVIATA = false;
+async function avviaApp() {
+  if (APP_AVVIATA) return;
+  APP_AVVIATA = true;
+  document.getElementById('kanban-tabs').style.display = MOBILE ? 'flex' : 'none';
+  await Promise.all([caricaLeads(), caricaStatoPC()]);
+  ascoltaCambiamenti();
+}
+
+(async () => {
+  // Arrivo dal link email (recupero password / invito): prima si sceglie la password
+  const hash = new URLSearchParams(location.hash.replace(/^#/, ''));
+  const daLink = ['recovery', 'invite', 'magiclink', 'signup'].includes(hash.get('type'));
+  sb.auth.onAuthStateChange((evento) => {
+    if (evento === 'PASSWORD_RECOVERY') mostraNuovaPassword(true);
+    if (evento === 'SIGNED_OUT') mostraLogin(true);
+  });
+  const { data: { session } } = await sb.auth.getSession();
+  if (daLink && session) { mostraNuovaPassword(true); return; }
+  if (session) avviaApp(); else mostraLogin(true);
+})();
+
+</script>
+</body>
+</html>
