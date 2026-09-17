@@ -863,12 +863,14 @@ function toggleTop50() {
   filtra();
 }
 
+// Lista <-> Kanban. Se sei in "Nuova ricerca" o "Statistiche", il primo clic ti porta alla lista
+// chiudendo quella vista (prima restava aperta e sembrava che il pulsante non funzionasse).
 function toggleVista() {
-  VISTA_LISTA = !VISTA_LISTA;
-  document.getElementById('lista-view').classList.toggle('active', VISTA_LISTA);
-  document.getElementById('kanban-view').classList.toggle('hidden', VISTA_LISTA);
-  document.getElementById('kanban-tabs').style.display = (VISTA_LISTA || !MOBILE) ? 'none' : 'flex';
-  if (VISTA_LISTA) renderLista(); else renderKanban();
+  const inAltraVista = document.getElementById('ricerca-view').classList.contains('active')
+                    || document.getElementById('stats-view').classList.contains('active');
+  nascondiViste();
+  VISTA_LISTA = inAltraVista ? true : !VISTA_LISTA;
+  mostraKanbanOLista();
 }
 
 // Telefono: le linguette sopra il kanban portano alla colonna scelta
@@ -1161,6 +1163,7 @@ function nascondiViste() {
   document.getElementById('kanban-tabs').style.display = 'none';
 }
 function mostraKanbanOLista() {
+  document.querySelector('.btn-lista').textContent = VISTA_LISTA ? '🗂 Kanban' : '📋 Lista';
   if (VISTA_LISTA) { document.getElementById('lista-view').classList.add('active'); renderLista(); }
   else { document.getElementById('kanban-view').classList.remove('hidden'); document.getElementById('kanban-tabs').style.display = MOBILE ? 'flex' : 'none'; renderKanban(); }
 }
