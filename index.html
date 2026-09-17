@@ -283,6 +283,58 @@
   .kanban-tabs button b { margin-left: 4px; color: #fff; }
   .kanban-tabs button.attiva { background: rgba(125,184,255,0.2); color: #cfe4ff; border-color: rgba(125,184,255,0.5); }
 
+  /* ===== v2: colonne, barra Oggi, esiti, storico, archivio ===== */
+  .stat { cursor: pointer; }
+  .stat-su { font-size: 0.8rem; color: #9aa1b2; font-weight: 600; }
+  .st-info .stat-num { color: #ffc966; }  .st-richiamo .stat-num { color: #dba8ff; }  .st-cliente .stat-num { color: #8fdc8f; }
+  .st-wa.ok .stat-num { color: #5fe58a; } .st-wa.avviso .stat-num { color: #ffc077; } .st-wa.stop .stat-num { color: #ff8a8a; }
+  .st-wa.stop { border-color: rgba(255,107,107,0.5); background: rgba(255,107,107,0.10); }
+  .col-attesa .col-header { background: rgba(255,255,255,0.08); color: #b6bccb; }
+  .col-richiamo .col-header { background: rgba(200,125,255,0.16); color: #dba8ff; }
+  .col-info .col-header { background: rgba(240,165,0,0.18); color: #ffc966; }
+  .col-risentire .col-header { background: rgba(90,180,255,0.16); color: #8fd0ff; }
+  .card-meta { font-size: 0.66rem; color: #9aa1b2; margin-top: 5px; }
+  .card-meta b { color: #dde0ea; font-weight: 600; }
+  .card-meta.scaduto b { color: #ffc077; }
+  .card-guarda { display: flex; gap: 4px; margin-top: 8px; flex-wrap: wrap; align-items: center; }
+  .card-guarda a { font-size: 0.62rem; color: #9aa1b2; text-decoration: none; padding: 3px 7px; border-radius: 999px; border: 1px solid var(--inset-border); background: var(--inset); }
+  .card-guarda a:hover { color: #fff; border-color: rgba(255,255,255,0.3); }
+  .card-guarda .lbl { font-size: 0.62rem; color: #767d8c; }
+  .card.archiviato { opacity: 0.7; }
+  .badge-arch { display: inline-block; font-size: 0.6rem; padding: 2px 7px; border-radius: 10px; background: rgba(255,255,255,0.08); color: #9aa1b2; margin-left: 6px; vertical-align: middle; }
+  .badge-richiamo { display: inline-block; font-size: 0.6rem; padding: 2px 7px; border-radius: 10px; background: rgba(200,125,255,0.18); color: #dba8ff; margin-left: 6px; vertical-align: middle; }
+  .btn-archivio { background: rgba(255,255,255,0.08); color: #b6bccb; border: 1px solid var(--glass-border); padding: 8px 14px; border-radius: var(--r-sm); font-size: 0.83rem; cursor: pointer; }
+  .btn-archivio b { color: #fff; }
+  .btn-archivio.active { background: #b6bccb; color: #10121a; border-color: #b6bccb; }
+  .btn-archivio.active b { color: #10121a; }
+  #filtro-archivio { background: var(--inset); border: 1px solid var(--inset-border); color: #eef0f6; padding: 7px 12px; border-radius: var(--r-sm); font-size: 0.83rem; }
+
+  .esiti { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 14px; }
+  .esiti button { flex: 1 1 140px; padding: 12px 10px; border-radius: var(--r-sm); font-size: 0.86rem; font-weight: 700; cursor: pointer; border: 1px solid transparent; }
+  .es-info { background: rgba(240,165,0,0.16); color: #ffc966; border-color: rgba(240,165,0,0.4) !important; }
+  .es-risentire { background: rgba(90,180,255,0.16); color: #8fd0ff; border-color: rgba(90,180,255,0.4) !important; }
+  .es-no { background: rgba(255,107,107,0.14); color: #ff8a8a; border-color: rgba(255,107,107,0.4) !important; }
+  .es-cliente { background: rgba(109,191,109,0.18); color: #8fdc8f; border-color: rgba(109,191,109,0.45) !important; }
+  .es-arch, .es-ripristina { background: rgba(255,255,255,0.06); color: #b6bccb; border-color: rgba(255,255,255,0.15) !important; flex: 0 1 auto !important; font-weight: 600 !important; }
+  .esiti button:hover { filter: brightness(1.2); }
+  .esiti button.attivo { outline: 2px solid currentColor; }
+  .motivi { display: none; gap: 6px; flex-wrap: wrap; margin: -6px 0 14px; }
+  .motivi.active { display: flex; }
+  .motivi button { background: var(--inset); border: 1px solid var(--inset-border); color: #dde0ea; padding: 8px 12px; border-radius: 999px; font-size: 0.8rem; cursor: pointer; }
+  .motivi button:hover { border-color: #ff8a8a; color: #ff8a8a; }
+  .esito-riga { font-size: 0.82rem; color: #dde0ea; background: var(--inset); border: 1px solid var(--inset-border); border-radius: var(--r-sm); padding: 9px 12px; margin-bottom: 12px; }
+  .esito-riga b { color: #fff; }
+  .storico { list-style: none; margin: 0 0 14px 4px; padding: 0; border-left: 2px solid rgba(255,255,255,0.12); }
+  .storico li { position: relative; padding: 2px 0 8px 14px; font-size: 0.8rem; color: #b6bccb; }
+  .storico li::before { content: ''; position: absolute; left: -5px; top: 7px; width: 8px; height: 8px; border-radius: 50%; background: #7db8ff; }
+  .storico li.invio::before { background: #5fe58a; } .storico li.esito::before { background: #ffc966; } .storico li.archivio::before { background: #767d8c; }
+  .storico .quando { color: #767d8c; font-size: 0.72rem; margin-right: 6px; }
+  .avanzato { margin-bottom: 14px; }
+  .avanzato summary { font-size: 0.74rem; color: #767d8c; cursor: pointer; padding: 4px 0; }
+  .avviso-doppio { background: rgba(255,169,77,0.10); border: 1px solid rgba(255,169,77,0.4); color: #ffc077; border-radius: var(--r-sm); padding: 8px 12px; font-size: 0.8rem; margin-bottom: 10px; }
+  .outreach-tab.richiamo { border-color: rgba(200,125,255,0.5); color: #dba8ff; }
+  .az.disab { opacity: 0.45; cursor: not-allowed; }
+
   /* ===== TELEFONO / TABLET ===== */
   @media (max-width: 900px) {
     .stats-view, .ricerca-view.active { grid-template-columns: 1fr; }
@@ -291,7 +343,8 @@
     .header { padding: 14px 16px 10px; }
     .header h1 { font-size: 1.05rem; }
     .stats-bar { gap: 8px; margin-top: 10px; }
-    .stat { padding: 8px 12px; flex: 1 1 calc(33% - 8px); }
+    .stat { padding: 8px 10px; flex: 1 1 calc(25% - 8px); }
+    .esiti button { flex: 1 1 45%; }
     .stat-num { font-size: 1.15rem; }
     .stat-label { font-size: 0.58rem; }
     .filtri { margin: 0 12px 12px; padding: 10px 12px; gap: 8px; }
@@ -343,13 +396,15 @@
 
 <div class="header">
   <div class="header-riga"><h1>🎬 CRM <span>Videomaker</span> — Lead Dashboard</h1><div class="header-destra"><span class="pill-pc" id="pill-pc" title="Stato del PC fisso (agente di ricerca)">🖥 PC …</span><span class="pill-sync" id="pill-sync">☁ connessione…</span><button class="btn-esci" onclick="esci()" title="Esci">⎋</button></div></div>
-  <div class="stats-bar">
-    <div class="stat"><div class="stat-num" id="stat-totale">0</div><div class="stat-label">Lead Totali</div></div>
-    <div class="stat stat-assoluta"><div class="stat-num" id="stat-assoluta">0</div><div class="stat-label">🔴 Priorità Assoluta</div></div>
-    <div class="stat stat-alta"><div class="stat-num" id="stat-alta">0</div><div class="stat-label">🟠 Priorità Alta</div></div>
-    <div class="stat"><div class="stat-num" id="stat-nuovi">0</div><div class="stat-label">Da Contattare</div></div>
-    <div class="stat"><div class="stat-num" id="stat-clienti">0</div><div class="stat-label">Clienti</div></div>
-    <div class="stat"><div class="stat-num" id="stat-score">0</div><div class="stat-label">Score Medio /100</div></div>
+  <div class="stats-bar" id="stats-bar">
+    <div class="stat st-da" onclick="vaiAColonnaNome('da_contattare')"><div class="stat-num" id="st-da_contattare">0</div><div class="stat-label">Da contattare</div></div>
+    <div class="stat st-attesa" onclick="vaiAColonnaNome('in_attesa')"><div class="stat-num" id="st-in_attesa">0</div><div class="stat-label">In attesa</div></div>
+    <div class="stat st-richiamo" onclick="vaiAColonnaNome('da_richiamare')"><div class="stat-num" id="st-da_richiamare">0</div><div class="stat-label">Da richiamare</div></div>
+    <div class="stat st-info" onclick="vaiAColonnaNome('chiede_info')"><div class="stat-num" id="st-chiede_info">0</div><div class="stat-label">🔥 Chiedono info</div></div>
+    <div class="stat st-risentire" onclick="vaiAColonnaNome('risentire')"><div class="stat-num" id="st-risentire">0</div><div class="stat-label">Da risentire</div></div>
+    <div class="stat st-cliente" onclick="vaiAColonnaNome('cliente')"><div class="stat-num" id="st-cliente">0</div><div class="stat-label">Clienti</div></div>
+    <div class="stat st-inviati"><div class="stat-num" id="st-inviati">0</div><div class="stat-label">Inviati oggi <span id="st-inviati-ieri"></span></div></div>
+    <div class="stat st-wa" id="stat-wa"><div class="stat-num" id="st-wa">0<span class="stat-su">/90</span></div><div class="stat-label">💬 WhatsApp oggi</div></div>
   </div>
 </div>
 
@@ -373,6 +428,8 @@
   <button class="btn-esporta" onclick="esportaCSV()">⬇ CSV</button>
   <button class="btn-ricerca" id="btn-ricerca-toggle" onclick="toggleRicerca()">🔍 Nuova Ricerca</button>
   <button class="btn-stats" id="btn-stats-toggle" onclick="toggleStats()">📊 Statistiche</button>
+  <button class="btn-archivio" id="btn-archivio-toggle" onclick="toggleArchivio()">📦 Archivio <b id="cnt-archivio">0</b></button>
+  <select id="filtro-archivio" onchange="filtra()" style="display:none"><option value="">Archivio: tutti</option><option value="nessuna_risposta">Nessuna risposta</option><option value="non_interessato">Non interessato</option><option value="contattati_prima_del_2026-09-18">Contattati prima del 18/09</option></select>
 </div>
 
 <!-- NUOVA RICERCA -->
@@ -448,27 +505,31 @@
 </div>
 
 <!-- KANBAN -->
-<div class="kanban-tabs" id="kanban-tabs"><button data-stato="da_contattare" class="attiva" onclick="vaiAColonna(this)">Da contattare <b id="tab-cnt-da_contattare">0</b></button><button data-stato="contattato" onclick="vaiAColonna(this)">Contattato <b id="tab-cnt-contattato">0</b></button><button data-stato="risposto" onclick="vaiAColonna(this)">Risposto <b id="tab-cnt-risposto">0</b></button><button data-stato="cliente" onclick="vaiAColonna(this)">Cliente <b id="tab-cnt-cliente">0</b></button><button data-stato="non_interessato" onclick="vaiAColonna(this)">Non int. <b id="tab-cnt-non_interessato">0</b></button></div>
+<div class="kanban-tabs" id="kanban-tabs"><button data-stato="da_contattare" class="attiva" onclick="vaiAColonna(this)">Da contattare <b id="tab-cnt-da_contattare">0</b></button><button data-stato="in_attesa" onclick="vaiAColonna(this)">In attesa <b id="tab-cnt-in_attesa">0</b></button><button data-stato="da_richiamare" onclick="vaiAColonna(this)">Da richiamare <b id="tab-cnt-da_richiamare">0</b></button><button data-stato="chiede_info" onclick="vaiAColonna(this)">Chiede info <b id="tab-cnt-chiede_info">0</b></button><button data-stato="risentire" onclick="vaiAColonna(this)">Da risentire <b id="tab-cnt-risentire">0</b></button><button data-stato="cliente" onclick="vaiAColonna(this)">Clienti <b id="tab-cnt-cliente">0</b></button></div>
 <div class="kanban-view" id="kanban-view">
-  <div class="colonna col-da-contattare">
-    <div class="col-header"><h3>Da Contattare</h3><span class="col-count" id="cnt-da-contattare">0</span></div>
+  <div class="colonna col-da-contattare" id="colonna-da_contattare">
+    <div class="col-header"><h3>Da contattare</h3><span class="col-count" id="cnt-da_contattare">0</span></div>
     <div class="cards-container" id="col-da_contattare"></div>
   </div>
-  <div class="colonna col-contattato">
-    <div class="col-header"><h3>Contattato</h3><span class="col-count" id="cnt-contattato">0</span></div>
-    <div class="cards-container" id="col-contattato"></div>
+  <div class="colonna col-attesa" id="colonna-in_attesa">
+    <div class="col-header"><h3>In attesa</h3><span class="col-count" id="cnt-in_attesa">0</span></div>
+    <div class="cards-container" id="col-in_attesa"></div>
   </div>
-  <div class="colonna col-risposto">
-    <div class="col-header"><h3>Risposto</h3><span class="col-count" id="cnt-risposto">0</span></div>
-    <div class="cards-container" id="col-risposto"></div>
+  <div class="colonna col-richiamo" id="colonna-da_richiamare">
+    <div class="col-header"><h3>Da richiamare</h3><span class="col-count" id="cnt-da_richiamare">0</span></div>
+    <div class="cards-container" id="col-da_richiamare"></div>
   </div>
-  <div class="colonna col-cliente">
-    <div class="col-header"><h3>Cliente</h3><span class="col-count" id="cnt-cliente">0</span></div>
+  <div class="colonna col-info" id="colonna-chiede_info">
+    <div class="col-header"><h3>Chiede info</h3><span class="col-count" id="cnt-chiede_info">0</span></div>
+    <div class="cards-container" id="col-chiede_info"></div>
+  </div>
+  <div class="colonna col-risentire" id="colonna-risentire">
+    <div class="col-header"><h3>Da risentire</h3><span class="col-count" id="cnt-risentire">0</span></div>
+    <div class="cards-container" id="col-risentire"></div>
+  </div>
+  <div class="colonna col-cliente" id="colonna-cliente">
+    <div class="col-header"><h3>Clienti</h3><span class="col-count" id="cnt-cliente">0</span></div>
     <div class="cards-container" id="col-cliente"></div>
-  </div>
-  <div class="colonna col-non-interessato">
-    <div class="col-header"><h3>Non Interessato</h3><span class="col-count" id="cnt-non-interessato">0</span></div>
-    <div class="cards-container" id="col-non_interessato"></div>
   </div>
 </div>
 
@@ -482,10 +543,12 @@
 
 <script>
 /* ============================================================
-   CRM VIDEOMAKER — versione online (Supabase)
-   Stessa dashboard del PC, ma i dati vivono nel cloud:
+   CRM VIDEOMAKER — versione online v2 (Supabase)
    - login con la tua email
-   - lettura/scrittura sulla tabella `leads`
+   - colonne "vive": Da contattare · In attesa · Da richiamare · Chiede info · Da risentire · Clienti
+   - archivio automatico (nessuna risposta, non interessati, storici)
+   - premendo WhatsApp/DM/Email il CRM segna da solo contatto, canale, data e storico
+   - esiti a un tocco, richiami giornalieri, contatore WhatsApp
    - aggiornamenti in tempo reale fra telefono, tablet e PC
    - "Nuova ricerca" = richiesta in coda, la esegue il PC fisso quando e' acceso
    ============================================================ */
@@ -500,27 +563,46 @@ let LEADS_FILTRATI = [];
 let LEAD_CORRENTE = null;
 let TOP50_ATTIVO = false;
 let VISTA_LISTA = false;
+let VISTA_ARCHIVIO = false;
 let BOZZA_CORRENTE = 'generico';
+let UTENTE = '';
+let EVENTI_RECENTI = [];          // eventi da ieri in qua (per contatori)
+let REGOLE = { richiami_al_giorno: 30, giorni_prima_del_richiamo: 7, giorni_attesa_prima_di_archiviare: 10, giorni_risentire: 90, whatsapp_max_giorno: 90, whatsapp_avviso: 80, score_minimo_richiamo: 60 };
+let MSG_RICHIAMO = 'Ciao {nome}! Ti avevo scritto qualche giorno fa e immagino che il messaggio si sia perso tra i tanti. Sono Cristian, videomaker: mi farebbe piacere capire in 5 minuti se posso esservi utile con un video per la vostra attività. Se non è il momento, nessun problema: basta un "no grazie" e non vi disturbo più. A presto!';
 
-const STATI = ["da_contattare", "contattato", "risposto", "cliente", "non_interessato"];
+const COLONNE = ['da_contattare', 'in_attesa', 'da_richiamare', 'chiede_info', 'risentire', 'cliente'];
+const NOMI_COLONNE = { da_contattare: 'Da contattare', in_attesa: 'In attesa', da_richiamare: 'Da richiamare', chiede_info: 'Chiede info', risentire: 'Da risentire', cliente: 'Clienti', archivio: 'Archivio' };
+const NOMI_ESITO = { chiede_info: '🔥 Chiede info', risentire: '🕓 Ci sentiremo più avanti', non_interessato: '✕ Non interessato', cliente: '⭐ Cliente', nessuna_risposta: '📦 Nessuna risposta' };
+const MOTIVI_NO = { nessun_budget: 'Nessun budget', ha_gia_qualcuno: 'Ha già qualcuno', non_target: 'Non è il target', altro: 'Altro' };
+const NOMI_ARCHIVIO = { nessuna_risposta: 'nessuna risposta', non_interessato: 'non interessato', 'contattati_prima_del_2026-09-18': 'contattato prima del 18/09/2026' };
 const MOBILE = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && window.innerWidth < 900);
 
-// Colonne leggere per la lista/kanban: i testi lunghi (bozze, note) si scaricano
-// solo quando apri la scheda del lead. Cosi' da telefono la pagina parte in fretta.
+// Colonne leggere per la lista/kanban: i testi lunghi (bozze, note) si scaricano solo aprendo la scheda.
 const COLONNE_LISTA = [
   'id','nome_azienda','categoria','citta','indirizzo','telefono','email','sito_web','instagram','facebook',
   'tiktok','linkedin','youtube','follower_instagram','hanno_video','ultima_data_post','fonte','lead_score',
   'priorita','canale_consigliato','stato_kanban','contattato_tramite','data_trovato','sessione_id','aggiornato_il',
+  'primo_contatto_il','ultimo_contatto_il','n_contatti','esito','motivo_no','risentire_il','archiviato',
+  'archiviato_il','archivio_motivo','richiamo_assegnato_il',
 ].join(',');
 const COLONNE_DETTAGLIO = 'bozza_outreach,bozze_outreach,note_ricerca,note_crm';
 
-// Campi che si possono modificare dalla dashboard
 const CAMPI_MODIFICABILI = new Set([
   'sito_web','email','telefono','instagram','facebook','linkedin','tiktok','youtube',
   'indirizzo','citta','stato_kanban','contattato_tramite','note_crm',
 ]);
 
+/* ------------------------------------------------------------ utilita' */
 function esc(s) { return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function oggiLocale(offsetGiorni = 0) { const d = new Date(); d.setDate(d.getDate() + offsetGiorni); return d.toLocaleDateString('sv-SE'); }
+function inizioGiornoISO(offsetGiorni = 0) { const d = new Date(); d.setDate(d.getDate() + offsetGiorni); d.setHours(0, 0, 0, 0); return d.toISOString(); }
+function giorniFa(iso) { return iso ? Math.floor((Date.now() - new Date(iso).getTime()) / 86400000) : null; }
+function dataBreve(iso) { if (!iso) return ''; const d = new Date(iso); return d.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' }); }
+function dataOra(iso) { if (!iso) return ''; const d = new Date(iso); return d.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: '2-digit' }) + ' ' + d.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }); }
+function giorniFaTesto(iso) { const g = giorniFa(iso); return g === null ? '' : g === 0 ? 'oggi' : g === 1 ? 'ieri' : `${g} gg fa`; }
+function numeroCifre(tel) { let n = (tel || '').replace(/\D/g, ''); if (n.startsWith('39') && n.length > 10) n = n.slice(2); return n; }
+function eCellulare(tel) { const n = numeroCifre(tel); return n.length >= 9 && n.startsWith('3'); }
+function nomeBreve(l) { return (l.nome_azienda || '').split(/[-|–(]/)[0].trim(); }
 
 function scoreClass(score) {
   if (score >= 80) return 'score-assoluta';
@@ -528,10 +610,20 @@ function scoreClass(score) {
   if (score >= 40) return 'score-normale';
   return 'score-bassa';
 }
-
 function prioBadge(p) {
   const icons = { ASSOLUTA: '🔴', ALTA: '🟠', NORMALE: '🟢', BASSA: '⚫' };
   return `<span class="prio-badge prio-${p}">${icons[p]||''} ${p}</span>`;
+}
+
+// In quale colonna vive il lead (derivato dai campi: nessun clic manuale)
+function colonnaDi(l) {
+  if (l.archiviato || l.stato_kanban === 'non_interessato') return 'archivio';
+  if (l.stato_kanban === 'cliente' || l.esito === 'cliente') return 'cliente';
+  if (l.esito === 'risentire') return 'risentire';
+  if (l.esito === 'chiede_info' || l.stato_kanban === 'risposto') return 'chiede_info';
+  if (l.stato_kanban === 'da_contattare' && !(l.n_contatti > 0)) return 'da_contattare';
+  if (l.richiamo_assegnato_il && (l.n_contatti || 0) < 2) return 'da_richiamare';
+  return 'in_attesa';
 }
 
 /* ============================================================
@@ -548,7 +640,7 @@ async function accedi(ev) {
     password: document.getElementById('login-password').value,
   });
   btn.disabled = false;
-  if (error) { err.textContent = 'Accesso non riuscito: ' + (error.message === 'Invalid login credentials' ? 'email o password errati' : error.message); return; }
+  if (error) { err.className = 'login-errore'; err.textContent = 'Accesso non riuscito: ' + (error.message === 'Invalid login credentials' ? 'email o password errati' : error.message); return; }
   mostraLogin(false);
   avviaApp();
 }
@@ -564,13 +656,11 @@ async function chiediLinkPassword(ev) {
   err.className = 'login-errore' + (error ? '' : ' login-ok');
   err.textContent = error ? 'Errore: ' + error.message : 'Email inviata a ' + email + ': apri il link che trovi dentro (controlla anche lo spam).';
 }
-
 function mostraNuovaPassword(visibile) {
   document.querySelector('#login form.login-box:not(#nuova-password-box)').style.display = visibile ? 'none' : '';
   document.getElementById('nuova-password-box').style.display = visibile ? '' : 'none';
   mostraLogin(true);
 }
-
 async function salvaNuovaPassword(ev) {
   ev.preventDefault();
   const p1 = document.getElementById('np1').value, p2 = document.getElementById('np2').value;
@@ -585,7 +675,6 @@ async function salvaNuovaPassword(ev) {
   mostraLogin(false);
   avviaApp();
 }
-
 async function esci() {
   if (!confirm('Uscire dal CRM su questo dispositivo?')) return;
   await sb.auth.signOut();
@@ -593,14 +682,13 @@ async function esci() {
 }
 
 /* ============================================================
-   CARICAMENTO LEAD DAL CLOUD
+   CARICAMENTO DAL CLOUD
    ============================================================ */
 function caricamento(testo) {
   const el = document.getElementById('caricamento');
   el.classList.toggle('active', !!testo);
   if (testo) document.getElementById('caricamento-testo').textContent = testo;
 }
-
 function pillSync(stato, testo) {
   const p = document.getElementById('pill-sync');
   p.className = 'pill-sync ' + (stato || '');
@@ -632,7 +720,6 @@ async function caricaLeads() {
   filtra();
 }
 
-// Scarica bozze e note di un lead (solo la prima volta che lo apri)
 async function caricaDettaglio(l) {
   if (l._dettaglio) return l;
   const { data, error } = await sb.from('leads').select(COLONNE_DETTAGLIO).eq('id', l.id).single();
@@ -640,8 +727,28 @@ async function caricaDettaglio(l) {
   return l;
 }
 
+async function caricaImpostazioni() {
+  const { data } = await sb.from('impostazioni').select('chiave,valore').in('chiave', ['agente_pc', 'categorie', 'regole', 'messaggio_richiamo']);
+  (data || []).forEach(r => applicaImpostazione(r.chiave, r.valore));
+  aggiornaStatoPC();
+}
+function applicaImpostazione(chiave, valore) {
+  if (chiave === 'agente_pc') STATO_PC = valore;
+  if (chiave === 'categorie') CATEGORIE_CLOUD = valore;
+  if (chiave === 'regole' && valore) REGOLE = Object.assign({}, REGOLE, valore);
+  if (chiave === 'messaggio_richiamo' && typeof valore === 'string') MSG_RICHIAMO = valore;
+}
+
+// Eventi da ieri (per "inviati oggi/ieri" e contatore WhatsApp)
+async function caricaEventiRecenti() {
+  const { data } = await sb.from('eventi').select('id,lead_id,tipo,canale,messaggio,esito,creato_il,creato_da')
+    .gte('creato_il', inizioGiornoISO(-1)).order('creato_il', { ascending: false });
+  EVENTI_RECENTI = data || [];
+  aggiornaStats();
+}
+
 /* ============================================================
-   TEMPO REALE — un cambio dal telefono compare subito sul tablet/PC
+   TEMPO REALE
    ============================================================ */
 let RENDER_TIMER = null;
 function rirenderizzaPresto() {
@@ -661,16 +768,20 @@ function ascoltaCambiamenti() {
           LEADS.push(Object.assign({}, nuovo, { _dettaglio: true }));
           LEADS.sort((a, b) => (b.lead_score || 0) - (a.lead_score || 0));
         } else {
-          // Mantengo i dettagli gia' scaricati: la riga realtime li contiene comunque tutti
           Object.assign(LEADS[idx], nuovo, { _dettaglio: true });
           if (LEAD_CORRENTE && LEAD_CORRENTE.id === nuovo.id) aggiornaModalDaRemoto();
         }
       }
       rirenderizzaPresto();
     })
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'eventi' }, payload => {
+      const e = payload.new; if (!e) return;
+      if (!EVENTI_RECENTI.some(x => x.id === e.id)) EVENTI_RECENTI.unshift(e);
+      aggiornaStats();
+      if (LEAD_CORRENTE && LEAD_CORRENTE.id === e.lead_id) caricaStorico(LEAD_CORRENTE.id);
+    })
     .on('postgres_changes', { event: '*', schema: 'public', table: 'impostazioni' }, payload => {
-      if (payload.new?.chiave === 'agente_pc') aggiornaStatoPC(payload.new.valore);
-      if (payload.new?.chiave === 'categorie') CATEGORIE_CLOUD = payload.new.valore;
+      if (payload.new?.chiave) { applicaImpostazione(payload.new.chiave, payload.new.valore); if (payload.new.chiave === 'agente_pc') aggiornaStatoPC(); }
     })
     .on('postgres_changes', { event: '*', schema: 'public', table: 'richieste_ricerca' }, payload => {
       if (RICHIESTA_CORRENTE && payload.new?.id === RICHIESTA_CORRENTE) mostraStatoRicerca(payload.new);
@@ -681,31 +792,23 @@ function ascoltaCambiamenti() {
     });
 }
 
-// Se la scheda aperta viene modificata da un altro dispositivo, aggiorno solo i controlli
-// (senza rifare tutta la scheda, per non perdere quello che stai scrivendo).
 function aggiornaModalDaRemoto() {
   const l = LEAD_CORRENTE;
-  const selStato = document.querySelector('.stato-select[data-campo="stato_kanban"]');
-  if (selStato && document.activeElement !== selStato) selStato.value = l.stato_kanban || 'da_contattare';
-  const selCanale = document.querySelector('.stato-select[data-campo="contattato_tramite"]');
-  if (selCanale && document.activeElement !== selCanale) selCanale.value = l.contattato_tramite || '';
-  document.querySelectorAll('.campo-editabile').forEach(inp => {
-    if (document.activeElement !== inp) inp.value = l[inp.dataset.campo] || '';
-  });
+  document.querySelectorAll('.campo-editabile').forEach(inp => { if (document.activeElement !== inp) inp.value = l[inp.dataset.campo] || ''; });
   const note = document.getElementById('note-crm');
   if (note && document.activeElement !== note) note.value = l.note_crm || '';
+  const es = document.getElementById('blocco-esiti'); if (es) es.innerHTML = htmlEsiti(l);
 }
 
 /* ============================================================
-   STATO DEL PC FISSO (heartbeat del worker)
+   STATO DEL PC FISSO
    ============================================================ */
 let STATO_PC = null;
 function pcAcceso() {
   if (!STATO_PC?.online_il) return false;
-  return (Date.now() - new Date(STATO_PC.online_il).getTime()) < 90 * 1000;   // heartbeat ogni 15s
+  return (Date.now() - new Date(STATO_PC.online_il).getTime()) < 90 * 1000;
 }
-function aggiornaStatoPC(valore) {
-  if (valore) STATO_PC = valore;
+function aggiornaStatoPC() {
   const pill = document.getElementById('pill-pc');
   const on = pcAcceso();
   const busy = on && STATO_PC?.ricerca_in_corso;
@@ -714,23 +817,15 @@ function aggiornaStatoPC(valore) {
   const avviso = document.getElementById('avviso-pc');
   if (avviso) {
     avviso.className = 'avviso-pc ' + (busy ? 'busy' : on ? 'on' : 'off');
-    avviso.textContent = busy ? 'Il PC sta gia' + "'" + ' cercando: la nuova richiesta partira' + "'" + ' subito dopo.'
+    avviso.textContent = busy ? "Il PC sta già cercando: la nuova richiesta partirà subito dopo."
       : on ? 'PC fisso acceso e in ascolto: la ricerca parte entro pochi secondi.'
-      : 'PC fisso spento. Puoi comunque mettere in coda la ricerca: partira' + "'" + ' da sola appena lo accendi (con AVVIA_SYNC_CLOUD.bat aperto).';
+      : "PC fisso spento. Puoi comunque mettere in coda la ricerca: partirà da sola appena lo accendi.";
   }
-}
-async function caricaStatoPC() {
-  const { data } = await sb.from('impostazioni').select('chiave,valore').in('chiave', ['agente_pc', 'categorie']);
-  (data || []).forEach(r => {
-    if (r.chiave === 'agente_pc') STATO_PC = r.valore;
-    if (r.chiave === 'categorie') CATEGORIE_CLOUD = r.valore;
-  });
-  aggiornaStatoPC();
 }
 setInterval(() => aggiornaStatoPC(), 30 * 1000);
 
 /* ============================================================
-   FILTRI / KANBAN / LISTA (identici alla dashboard del PC)
+   FILTRI / KANBAN / LISTA / ARCHIVIO
    ============================================================ */
 function popolaFiltri() {
   const catCount = {}, cittaCount = {};
@@ -750,16 +845,19 @@ function popolaFiltri() {
   selCat.value = vCat; selCitta.value = vCitta;
 }
 
+let RICERCA_ATTIVA = false;   // c'e' testo nel campo Cerca → si cerca anche in archivio, in lista
 function filtra() {
-  const search = document.getElementById('filtro-search').value.toLowerCase();
+  const search = document.getElementById('filtro-search').value.trim().toLowerCase();
   const cat = document.getElementById('filtro-cat').value;
   const citta = document.getElementById('filtro-citta').value;
   const prio = document.getElementById('filtro-prio').value;
+  const motivoArch = document.getElementById('filtro-archivio').value;
+  RICERCA_ATTIVA = !!search;
 
-  // Cerca "globale": nome, citta', categoria, email, Instagram, sito, indirizzo E telefono.
-  // Il telefono si confronta solo sulle cifre, cosi' "329 176 9967", "+39 3291769967" e "329-1769967" sono uguali.
+  // Cerca "globale": nome, citta', categoria, email, Instagram, sito, indirizzo E telefono (solo cifre).
   const searchCifre = search.replace(/\D/g, '');
   const cercaNumero = searchCifre.length >= 4 && /^[\d\s+\-().]+$/.test(search);
+
   LEADS_FILTRATI = LEADS.filter(l => {
     if (search) {
       let trovato;
@@ -771,7 +869,10 @@ function filtra() {
           .some(v => v && v.toLowerCase().includes(search));
       }
       if (!trovato) return false;
-    }
+    } else if (VISTA_ARCHIVIO) {
+      if (colonnaDi(l) !== 'archivio') return false;
+      if (motivoArch && (l.archivio_motivo || '') !== motivoArch) return false;
+    } else if (colonnaDi(l) === 'archivio') return false;
     if (cat && l.categoria !== cat) return false;
     if (citta && l.citta !== citta) return false;
     if (prio && l.priorita !== prio) return false;
@@ -779,37 +880,35 @@ function filtra() {
   });
   if (TOP50_ATTIVO) LEADS_FILTRATI = LEADS_FILTRATI.slice(0, 50);
 
-  if (VISTA_LISTA) renderLista();
-  else renderKanban();
+  // con testo nel Cerca (o in archivio) mostro sempre la lista, senza toccare la scelta lista/kanban
+  const mostraLista = RICERCA_ATTIVA || VISTA_ARCHIVIO || VISTA_LISTA;
+  if (mostraLista) renderLista(); else renderKanban();
+  if (!vistaSpecialeAperta()) {
+    document.getElementById('lista-view').classList.toggle('active', mostraLista);
+    document.getElementById('kanban-view').classList.toggle('hidden', mostraLista);
+    document.getElementById('kanban-tabs').style.display = (mostraLista || !MOBILE) ? 'none' : 'flex';
+  }
   aggiornaStats();
 }
 
 function renderKanban() {
-  STATI.forEach(stato => {
-    const col = document.getElementById('col-' + stato);
-    const cnt = document.getElementById('cnt-' + stato.replace('_', '-'));
-    let leads = LEADS_FILTRATI.filter(l => l.stato_kanban === stato);
-    cnt.textContent = leads.length;
-    const tab = document.getElementById('tab-cnt-' + stato); if (tab) tab.textContent = leads.length;
-
-    if (leads.length === 0) { col.innerHTML = '<div class="empty"><div class="empty-icon">📭</div>Nessun lead</div>'; return; }
-
-    // Sul telefono limito le card per colonna (se ne vedono altre cercando/filtrando)
-    const MAX = MOBILE ? 150 : 100000;
+  const MAX = MOBILE ? 150 : 100000;
+  COLONNE.forEach(col => {
+    const box = document.getElementById('col-' + col);
+    let leads = LEADS_FILTRATI.filter(l => colonnaDi(l) === col);
+    if (col === 'risentire') leads.sort((a, b) => (a.risentire_il || '').localeCompare(b.risentire_il || ''));
+    if (col === 'in_attesa') leads.sort((a, b) => (b.ultimo_contatto_il || '').localeCompare(a.ultimo_contatto_il || ''));
+    document.getElementById('cnt-' + col).textContent = leads.length;
+    const tab = document.getElementById('tab-cnt-' + col); if (tab) tab.textContent = leads.length;
+    if (!leads.length) { box.innerHTML = '<div class="empty"><div class="empty-icon">📭</div>Nessun lead</div>'; return; }
     let html = '';
-    if (stato === 'da_contattare' && !TOP50_ATTIVO) {
-      const top = leads.slice(0, 50);
-      const altri = leads.slice(50, MAX);
-      if (top.length) {
-        html += `<span class="top50-label">⭐ Top ${top.length} per score</span>`;
-        html += top.map(l => cardHTML(l)).join('');
-      }
-      if (altri.length) { html += `<div class="separator-line"></div>`; html += altri.map(l => cardHTML(l)).join(''); }
-    } else {
-      html = leads.slice(0, MAX).map(l => cardHTML(l)).join('');
-    }
+    if (col === 'da_contattare' && !TOP50_ATTIVO) {
+      const top = leads.slice(0, 50), altri = leads.slice(50, MAX);
+      if (top.length) html += `<span class="top50-label">⭐ Top ${top.length} per score</span>` + top.map(cardHTML).join('');
+      if (altri.length) html += `<div class="separator-line"></div>` + altri.map(cardHTML).join('');
+    } else html = leads.slice(0, MAX).map(cardHTML).join('');
     if (leads.length > MAX) html += `<div class="empty">… e altri ${leads.length - MAX}. Usa cerca/filtri per trovarli.</div>`;
-    col.innerHTML = html;
+    box.innerHTML = html;
   });
 }
 
@@ -818,6 +917,8 @@ function renderLista() {
   body.innerHTML = LEADS_FILTRATI.map(l => {
     const sc = l.lead_score || 0;
     const chips = [l.instagram ? 'IG' : '', l.facebook ? 'FB' : '', l.email ? '✉' : '', l.telefono ? '📞' : ''].filter(Boolean).join(' ');
+    const col = colonnaDi(l);
+    const stato = col === 'archivio' ? `Archivio · ${NOMI_ARCHIVIO[l.archivio_motivo] || l.archivio_motivo || ''}` : NOMI_COLONNE[col];
     return `<tr onclick="apriModal('${l.id}')">
       <td><span class="score-badge ${scoreClass(sc)}" style="position:static;display:inline-flex">${sc}</span></td>
       <td>${prioBadge(l.priorita || 'BASSA')}</td>
@@ -827,10 +928,49 @@ function renderLista() {
       <td style="font-size:0.78rem">${esc(l.telefono) || '—'}</td>
       <td style="font-size:0.78rem;color:#6dbf6d">${esc(l.email) || '—'}</td>
       <td style="font-size:0.75rem;color:#aaa">${chips}</td>
-      <td style="font-size:0.75rem;color:#e94560">${esc(l.canale_consigliato) || '—'}</td>
-      <td style="font-size:0.75rem;color:#888">${l.stato_kanban?.replace('_',' ') || ''}</td>
+      <td style="font-size:0.75rem;color:#e94560">${esc(l.contattato_tramite || l.canale_consigliato) || '—'}</td>
+      <td style="font-size:0.75rem;color:#888">${esc(stato)}${l.ultimo_contatto_il ? ` · ${dataBreve(l.ultimo_contatto_il)}` : ''}</td>
     </tr>`;
   }).join('');
+}
+
+// Riga "Guarda": apre profilo/sito/Maps senza segnare nulla
+function htmlGuarda(l) {
+  const link = (url, t) => `<a href="${esc(url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${t}</a>`;
+  const parti = [];
+  if (l.instagram) parti.push(link(l.instagram.startsWith('http') ? l.instagram : 'https://instagram.com/' + l.instagram.replace(/^@/, ''), 'Instagram'));
+  if (l.sito_web) parti.push(link(l.sito_web.startsWith('http') ? l.sito_web : 'https://' + l.sito_web, 'Sito'));
+  if (l.facebook) parti.push(link(l.facebook.startsWith('http') ? l.facebook : 'https://facebook.com/' + l.facebook, 'Facebook'));
+  parti.push(link('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(`${l.nome_azienda || ''} ${l.citta || ''}`), 'Maps'));
+  return `<div class="card-guarda"><span class="lbl">👁 Guarda:</span>${parti.join('')}</div>`;
+}
+
+// Riga azioni: i pulsanti di invio (segnano da soli) + chiama per i fissi
+function htmlAzioni(l, dentroScheda) {
+  const cls = dentroScheda ? 'btn-copia' : 'az';
+  const stop = dentroScheda ? '' : 'event.stopPropagation();';
+  const stile = (s) => dentroScheda ? `style="${s};margin-left:8px"` : '';
+  const b = [];
+  if (l.telefono && eCellulare(l.telefono))
+    b.push(`<button class="${cls} az-wa" ${stile('background:rgba(37,211,102,0.18);color:#5fe58a;border-color:rgba(37,211,102,0.4)')} title="WhatsApp col messaggio pronto" onclick="${stop}azioneRapida('${l.id}','wa')">💬 WhatsApp</button>`);
+  else if (l.telefono)
+    b.push(MOBILE ? `<a class="${cls} az-tel" ${stile('background:rgba(240,165,0,0.16);color:#ffc966;border-color:rgba(240,165,0,0.35);text-decoration:none')} href="tel:${esc(numeroCifre(l.telefono))}" onclick="event.stopPropagation()" title="Numero fisso: WhatsApp non disponibile">📞 Chiama (fisso)</a>`
+                  : `<span class="${cls} az-tel disab" ${stile('background:rgba(240,165,0,0.10);color:#ffc966;border-color:rgba(240,165,0,0.3)')} title="Numero fisso: WhatsApp non disponibile">☎ fisso ${esc(l.telefono)}</span>`);
+  if (l.instagram) b.push(`<button class="${cls} az-ig" ${stile('background:#c13584')} title="Copia messaggio e apri DM Instagram" onclick="${stop}azioneRapida('${l.id}','ig')">📩 DM</button>`);
+  if (l.email) b.push(`<button class="${cls} az-mail" ${stile('background:rgba(125,184,255,0.16);color:#9ecbff;border-color:rgba(125,184,255,0.4)')} title="Scrivi email" onclick="${stop}azioneRapida('${l.id}','mail')">✉ Email</button>`);
+  if (l.telefono && eCellulare(l.telefono) && MOBILE && !dentroScheda) b.push(`<a class="az az-tel" href="tel:${esc(numeroCifre(l.telefono))}" onclick="event.stopPropagation()">📞</a>`);
+  return b.join('');
+}
+
+function metaCard(l) {
+  const col = colonnaDi(l);
+  if (col === 'in_attesa') return `<div class="card-meta">✓ Scritto <b>${giorniFaTesto(l.ultimo_contatto_il) || 'prima del 18/09'}</b> via <b>${esc(l.contattato_tramite || '—')}</b>${(l.n_contatti || 0) >= 2 ? ' · 2° messaggio' : ''}</div>`;
+  if (col === 'da_richiamare') return `<div class="card-meta">↻ 1° messaggio <b>${giorniFaTesto(l.ultimo_contatto_il)}</b> via <b>${esc(l.contattato_tramite || '—')}</b>, nessuna risposta → <b>richiamo</b></div>`;
+  if (col === 'risentire') { const scad = l.risentire_il && l.risentire_il <= oggiLocale(); return `<div class="card-meta ${scad ? 'scaduto' : ''}">🕓 Risentire il <b>${l.risentire_il ? new Date(l.risentire_il).toLocaleDateString('it-IT') : '—'}</b>${scad ? ' · è ora!' : ''}</div>`; }
+  if (col === 'chiede_info') return `<div class="card-meta">🔥 Ha chiesto info <b>${giorniFaTesto(l.aggiornato_il)}</b> · da chiudere</div>`;
+  if (col === 'cliente') return `<div class="card-meta">⭐ Cliente</div>`;
+  if (col === 'archivio') return `<div class="card-meta">📦 ${esc(NOMI_ARCHIVIO[l.archivio_motivo] || l.archivio_motivo || 'archiviato')}${l.motivo_no ? ' · ' + esc(MOTIVI_NO[l.motivo_no] || l.motivo_no) : ''}</div>`;
+  return `<div class="canale-tag">→ consigliato <strong>${esc(l.canale_consigliato) || '—'}</strong></div>`;
 }
 
 function cardHTML(l) {
@@ -840,35 +980,22 @@ function cardHTML(l) {
   if (l.instagram) chips.push('<span class="social-chip chip-ig">IG</span>');
   if (l.facebook) chips.push('<span class="social-chip chip-fb">FB</span>');
   if (l.email) chips.push('<span class="social-chip chip-email">✉</span>');
-  if (l.telefono) chips.push('<span class="social-chip chip-tel">📞</span>');
+  if (l.telefono) chips.push(`<span class="social-chip chip-tel">${eCellulare(l.telefono) ? '📱' : '☎'}</span>`);
   if (l.youtube) chips.push('<span class="social-chip chip-yt">YT</span>');
   if (l.linkedin) chips.push('<span class="social-chip chip-li">LI</span>');
   if (l.tiktok) chips.push('<span class="social-chip chip-tk">TK</span>');
-  return `<div class="card" onclick="apriModal('${l.id}')">
+  const col = colonnaDi(l);
+  return `<div class="card ${col === 'archivio' ? 'archiviato' : ''}" onclick="apriModal('${l.id}')">
     <div class="score-badge ${scoreClass(score)}">${score}</div>
     ${prioBadge(prio)}
     <div class="card-nome">${esc(l.nome_azienda)}</div>
     <div class="card-cat">${esc(l.categoria)}</div>
     <div class="card-citta">📍 ${esc(l.citta)}</div>
     <div class="card-social">${chips.join('')}</div>
-    <div class="canale-tag">→ <strong>${esc(l.canale_consigliato) || '—'}</strong></div>
-    ${l.contattato_tramite ? `<div class="canale-tag">✓ Contattato su <strong>${esc(l.contattato_tramite)}</strong></div>` : ''}
-    <div class="card-azioni">
-      ${l.telefono ? `<button class="az az-wa" title="WhatsApp col messaggio pronto" onclick="event.stopPropagation();azioneRapida('${l.id}','wa')">💬 WhatsApp</button>` : ''}
-      ${l.instagram ? `<button class="az az-ig" title="Copia messaggio e apri DM Instagram" onclick="event.stopPropagation();azioneRapida('${l.id}','ig')">📩 DM</button>` : ''}
-      ${l.email ? `<button class="az az-mail" title="Scrivi email" onclick="event.stopPropagation();azioneRapida('${l.id}','mail')">✉ Email</button>` : ''}
-      ${l.telefono && MOBILE ? `<a class="az az-tel" href="tel:${esc(l.telefono.replace(/\s+/g,''))}" onclick="event.stopPropagation()">📞</a>` : ''}
-    </div>
+    ${metaCard(l)}
+    ${htmlGuarda(l)}
+    <div class="card-azioni">${htmlAzioni(l, false)}</div>
   </div>`;
-}
-
-// Dalla card: apre la scheda (cosi' poi segni "contattato") e lancia subito il canale scelto
-async function azioneRapida(id, canale) {
-  await apriModal(id);
-  if (!LEAD_CORRENTE || LEAD_CORRENTE.id !== id) return;
-  if (canale === 'wa') apriWhatsApp();
-  else if (canale === 'ig') apriDM();
-  else if (canale === 'mail') apriEmail();
 }
 
 function toggleTop50() {
@@ -877,20 +1004,42 @@ function toggleTop50() {
   filtra();
 }
 
-// Lista <-> Kanban. Se sei in "Nuova ricerca" o "Statistiche", il primo clic ti porta alla lista
-// chiudendo quella vista (prima restava aperta e sembrava che il pulsante non funzionasse).
+function vistaSpecialeAperta() {
+  return document.getElementById('ricerca-view').classList.contains('active') || document.getElementById('stats-view').classList.contains('active');
+}
+function nascondiViste() {
+  ['ricerca-view', 'stats-view', 'lista-view'].forEach(id => document.getElementById(id).classList.remove('active'));
+  ['btn-ricerca-toggle', 'btn-stats-toggle'].forEach(id => document.getElementById(id).classList.remove('active'));
+  document.getElementById('kanban-view').classList.add('hidden');
+  document.getElementById('kanban-tabs').style.display = 'none';
+}
+function mostraKanbanOLista() {
+  document.querySelector('.btn-lista').textContent = VISTA_LISTA ? '🗂 Kanban' : '📋 Lista';
+  filtra();
+}
 function toggleVista() {
-  const inAltraVista = document.getElementById('ricerca-view').classList.contains('active')
-                    || document.getElementById('stats-view').classList.contains('active');
+  const inAltra = vistaSpecialeAperta();
   nascondiViste();
-  VISTA_LISTA = inAltraVista ? true : !VISTA_LISTA;
+  VISTA_LISTA = inAltra ? true : !VISTA_LISTA;
+  mostraKanbanOLista();
+}
+function toggleArchivio() {
+  VISTA_ARCHIVIO = !VISTA_ARCHIVIO;
+  nascondiViste();
+  document.getElementById('btn-archivio-toggle').classList.toggle('active', VISTA_ARCHIVIO);
+  document.getElementById('filtro-archivio').style.display = VISTA_ARCHIVIO ? '' : 'none';
   mostraKanbanOLista();
 }
 
-// Telefono: le linguette sopra il kanban portano alla colonna scelta
+function vaiAColonnaNome(col) {
+  if (VISTA_ARCHIVIO) toggleArchivio();
+  if (vistaSpecialeAperta() || VISTA_LISTA) { nascondiViste(); VISTA_LISTA = false; mostraKanbanOLista(); }
+  const btn = document.querySelector(`#kanban-tabs button[data-stato="${col}"]`);
+  if (btn) vaiAColonna(btn);
+}
 function vaiAColonna(btn) {
   document.querySelectorAll('#kanban-tabs button').forEach(b => b.classList.toggle('attiva', b === btn));
-  const col = document.getElementById('col-' + btn.dataset.stato)?.closest('.colonna');
+  const col = document.getElementById('colonna-' + btn.dataset.stato);
   if (col) col.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
 }
 document.getElementById('kanban-view').addEventListener('scroll', () => {
@@ -901,20 +1050,42 @@ document.getElementById('kanban-view').addEventListener('scroll', () => {
 }, { passive: true });
 
 /* ============================================================
-   SCHEDA LEAD (modal)
+   SCHEDA LEAD
    ============================================================ */
 function campoEditabile(label, campo, valore, apribile) {
   const v = valore || '';
   const apriBtn = (apribile && v) ? `<a href="${esc(v.startsWith('http')?v:'https://'+v)}" target="_blank" rel="noopener" title="Apri" style="margin-left:6px;text-decoration:none;">↗</a>` : '';
-  const telBtn = (campo === 'telefono' && v && MOBILE) ? `<a href="tel:${esc(v.replace(/\s+/g,''))}" title="Chiama" style="margin-left:6px;text-decoration:none;">📞</a>` : '';
+  const telBtn = (campo === 'telefono' && v && MOBILE) ? `<a href="tel:${esc(numeroCifre(v))}" title="Chiama" style="margin-left:6px;text-decoration:none;">📞</a>` : '';
   return `<div class="info-item">
-    <div class="info-label">${label}</div>
+    <div class="info-label">${label}${campo === 'telefono' && v ? (eCellulare(v) ? ' · cellulare' : ' · fisso') : ''}</div>
     <div style="display:flex;align-items:center;">
       <input class="campo-editabile" data-campo="${campo}" value="${esc(v)}" placeholder="—" onblur="salvaCampoLead('${campo}', this.value)" onkeydown="if(event.key==='Enter') this.blur()">
       ${apriBtn}${telBtn}
     </div>
   </div>`;
 }
+
+function htmlEsiti(l) {
+  const col = colonnaDi(l);
+  const contattato = (l.n_contatti || 0) > 0 || l.stato_kanban !== 'da_contattare';
+  if (!contattato) return `<div class="esito-riga">Lead nuovo: scrivigli con uno dei pulsanti qui sotto, il CRM segna tutto da solo.</div>`;
+  const att = k => (l.esito === k ? ' attivo' : '');
+  let riga = '';
+  if (col === 'archivio') riga = `<div class="esito-riga">📦 In archivio: <b>${esc(NOMI_ARCHIVIO[l.archivio_motivo] || l.archivio_motivo || '')}</b>${l.motivo_no ? ' — motivo: <b>' + esc(MOTIVI_NO[l.motivo_no] || l.motivo_no) + '</b>' : ''}${l.archiviato_il ? ' · ' + dataOra(l.archiviato_il) : ''}</div>`;
+  else if (l.esito) riga = `<div class="esito-riga">Esito: <b>${NOMI_ESITO[l.esito] || l.esito}</b>${l.esito === 'risentire' && l.risentire_il ? ' — promemoria il <b>' + new Date(l.risentire_il).toLocaleDateString('it-IT') + '</b> (<a href="#" onclick="cambiaDataRisentire(event)" style="color:#8fd0ff">cambia</a>)' : ''}</div>`;
+  else riga = `<div class="esito-riga">In attesa di risposta · ${l.n_contatti || 1} messaggio/i · ultimo <b>${giorniFaTesto(l.ultimo_contatto_il) || 'prima del 18/09'}</b> via <b>${esc(l.contattato_tramite || '—')}</b>. Se risponde, un tocco qui sotto:</div>`;
+  return riga + `
+    <div class="esiti">
+      <button class="es-info${att('chiede_info')}" onclick="segnaEsito('chiede_info')">🔥 Chiede info</button>
+      <button class="es-risentire${att('risentire')}" onclick="segnaEsito('risentire')">🕓 Ci sentiremo più avanti</button>
+      <button class="es-no${att('non_interessato')}" onclick="mostraMotivi()">✕ Non interessato</button>
+      <button class="es-cliente${att('cliente')}" onclick="segnaEsito('cliente')">⭐ Cliente</button>
+      ${col === 'archivio' ? `<button class="es-ripristina" onclick="ripristina()">↩ Rimetti fra gli attivi</button>`
+                            : (col !== 'cliente' ? `<button class="es-arch" onclick="segnaEsito('nessuna_risposta')">📦 Archivia (nessuna risposta)</button>` : '')}
+    </div>
+    <div class="motivi" id="motivi">${Object.entries(MOTIVI_NO).map(([k, v]) => `<button onclick="segnaEsito('non_interessato','${k}')">${v}</button>`).join('')}</div>`;
+}
+function mostraMotivi() { document.getElementById('motivi').classList.toggle('active'); }
 
 async function apriModal(id) {
   const l = LEADS.find(x => x.id === id);
@@ -923,9 +1094,10 @@ async function apriModal(id) {
   document.getElementById('modal').classList.add('active');
   document.getElementById('modal-contenuto').innerHTML = '<div class="empty"><div class="spinner"></div>Carico la scheda…</div>';
   await caricaDettaglio(l);
-  if (LEAD_CORRENTE !== l) return;   // nel frattempo ne hai aperto un altro
+  if (LEAD_CORRENTE !== l) return;
   const score = l.lead_score || 0;
   const prio = l.priorita || 'BASSA';
+  const col = colonnaDi(l);
 
   document.getElementById('modal-contenuto').innerHTML = `
     <div class="modal-header">
@@ -934,11 +1106,13 @@ async function apriModal(id) {
         <div style="font-size:0.55rem;opacity:0.8">/100</div>
       </div>
       <div>
-        ${prioBadge(prio)}
+        ${prioBadge(prio)}${col === 'archivio' ? '<span class="badge-arch">📦 archivio</span>' : ''}${col === 'da_richiamare' ? '<span class="badge-richiamo">↻ da richiamare</span>' : ''}
         <h2>${esc(l.nome_azienda)}</h2>
-        <div class="modal-cat">${esc(l.categoria)} · ${esc(l.citta)} · ${esc(l.data_trovato)}</div>
+        <div class="modal-cat">${esc(l.categoria)} · ${esc(l.citta)} · trovato il ${esc(l.data_trovato)}</div>
       </div>
     </div>
+
+    <div id="blocco-esiti">${htmlEsiti(l)}</div>
 
     <div class="info-grid">
       ${campoEditabile('Telefono', 'telefono', l.telefono, false)}
@@ -954,95 +1128,166 @@ async function apriModal(id) {
     </div>
     <div id="salva-campo-avviso" style="font-size:0.72rem;color:#8fdc8f;height:16px;margin:-8px 0 8px;"></div>
 
-    ${l.note_ricerca && l.note_ricerca !== 'Solo dati base trovati' ? `
-    <div class="note-box">
-      <div class="info-label" style="margin-bottom:5px">Note</div>
-      <p>${esc(l.note_ricerca)}</p>
-    </div>` : ''}
+    ${l.note_ricerca && l.note_ricerca !== 'Solo dati base trovati' ? `<div class="note-box"><div class="info-label" style="margin-bottom:5px">Note ricerca</div><p>${esc(l.note_ricerca)}</p></div>` : ''}
 
     <div class="outreach-box">
       <h4>✍ Messaggio di contatto — scegli quello adatto al profilo</h4>
+      <div id="avviso-doppio"></div>
       <div class="outreach-tabs" id="outreach-tabs">${linguetteOutreach(l)}</div>
       <div class="outreach-oggetto" id="outreach-oggetto" hidden></div>
       <div class="outreach-text" id="outreach-text"></div>
       <button class="btn-copia" onclick="copiaOutreach()">📋 Copia Messaggio</button>
-      ${l.telefono ? `<button class="btn-copia" style="background:rgba(37,211,102,0.18);color:#5fe58a;border-color:rgba(37,211,102,0.4);margin-left:8px" onclick="apriWhatsApp()">💬 Apri WhatsApp</button>` : ''}
-      ${l.instagram ? `<button class="btn-copia" style="background:#c13584;margin-left:8px" onclick="apriDM()">📩 Copia + Apri DM Instagram</button>` : ''}
-      ${l.email ? `<button class="btn-copia" style="background:rgba(125,184,255,0.16);color:#9ecbff;border-color:rgba(125,184,255,0.4);margin-left:8px" onclick="apriEmail()">✉ Scrivi Email${MOBILE ? '' : ' (Gmail)'}</button>` : ''}
+      ${htmlAzioni(l, true)}
+      <div style="font-size:0.7rem;color:#767d8c;margin-top:8px">Premendo WhatsApp / DM / Email il CRM segna da solo contatto, canale, data e storico.</div>
     </div>
 
-    <div class="info-grid">
-      <div class="info-item">
-        <div class="info-label" style="margin-bottom:5px">Stato CRM</div>
-        <select class="stato-select" data-campo="stato_kanban" onchange="cambiaStato(this.value)">
-          <option value="da_contattare" ${l.stato_kanban==='da_contattare'?'selected':''}>Da Contattare</option>
-          <option value="contattato" ${l.stato_kanban==='contattato'?'selected':''}>Contattato</option>
-          <option value="risposto" ${l.stato_kanban==='risposto'?'selected':''}>Risposto</option>
-          <option value="cliente" ${l.stato_kanban==='cliente'?'selected':''}>Cliente</option>
-          <option value="non_interessato" ${l.stato_kanban==='non_interessato'?'selected':''}>Non Interessato</option>
-        </select>
-      </div>
-      <div class="info-item">
-        <div class="info-label" style="margin-bottom:5px">Contattato tramite</div>
-        <select class="stato-select" data-campo="contattato_tramite" onchange="cambiaCanaleContatto(this.value)">
-          <option value="" ${!l.contattato_tramite?'selected':''}>—</option>
-          <option value="WhatsApp" ${l.contattato_tramite==='WhatsApp'?'selected':''}>💬 WhatsApp</option>
-          <option value="Instagram" ${l.contattato_tramite==='Instagram'?'selected':''}>📷 Instagram</option>
-          <option value="Facebook" ${l.contattato_tramite==='Facebook'?'selected':''}>👤 Facebook</option>
-          <option value="LinkedIn" ${l.contattato_tramite==='LinkedIn'?'selected':''}>💼 LinkedIn</option>
-          <option value="Email" ${l.contattato_tramite==='Email'?'selected':''}>✉ Email</option>
-          <option value="Telefono" ${l.contattato_tramite==='Telefono'?'selected':''}>📞 Telefono</option>
-          <option value="Di persona" ${l.contattato_tramite==='Di persona'?'selected':''}>🤝 Di persona</option>
-        </select>
-      </div>
-    </div>
+    <div class="info-label" style="margin-bottom:6px">🕘 Storico</div>
+    <ul class="storico" id="storico"><li>carico…</li></ul>
 
     <div class="info-item" style="margin-bottom:16px">
       <div class="info-label" style="margin-bottom:6px">📝 Appunti (visibili su tutti i dispositivi)</div>
       <textarea class="note-crm" id="note-crm" placeholder="Es. richiamare lunedì, interessati a un reel per l'apertura..." onblur="salvaCampoLead('note_crm', this.value)">${esc(l.note_crm)}</textarea>
     </div>
+
+    <details class="avanzato"><summary>Modifica manuale stato / canale (solo se serve)</summary>
+      <div class="info-grid" style="margin-top:8px">
+        <div class="info-item"><div class="info-label" style="margin-bottom:5px">Stato</div>
+          <select class="stato-select" data-campo="stato_kanban" onchange="salvaCampoLead('stato_kanban', this.value)">
+            ${['da_contattare','contattato','risposto','cliente','non_interessato'].map(s => `<option value="${s}" ${l.stato_kanban===s?'selected':''}>${s.replace('_',' ')}</option>`).join('')}
+          </select></div>
+        <div class="info-item"><div class="info-label" style="margin-bottom:5px">Contattato tramite</div>
+          <select class="stato-select" data-campo="contattato_tramite" onchange="salvaCampoLead('contattato_tramite', this.value)">
+            ${['', 'WhatsApp','Instagram','Facebook','LinkedIn','Email','Telefono','Di persona'].map(c => `<option value="${c}" ${(l.contattato_tramite||'')===c?'selected':''}>${c || '—'}</option>`).join('')}
+          </select></div>
+      </div>
+    </details>
   `;
   mostraBozza(bozzaIniziale(l));
+  avvisoDoppio(l);
+  caricaStorico(l.id);
 }
 
 function chiudiModal() { document.getElementById('modal').classList.remove('active'); LEAD_CORRENTE = null; }
 document.getElementById('modal').addEventListener('click', e => { if (e.target === document.getElementById('modal')) chiudiModal(); });
 
-/* ------------------------------------------------------------
-   SALVATAGGIO SUL CLOUD
-   ------------------------------------------------------------ */
+// Avviso anti-doppione: gia' scritto a questo lead, o a un altro lead con lo stesso numero
+function avvisoDoppio(l) {
+  const box = document.getElementById('avviso-doppio'); if (!box) return;
+  const righe = [];
+  if ((l.n_contatti || 0) > 0 && colonnaDi(l) !== 'da_richiamare')
+    righe.push(`⚠ Già scritto a questa azienda ${l.ultimo_contatto_il ? 'il <b>' + dataOra(l.ultimo_contatto_il) + '</b>' : '<b>prima del 18/09</b>'} via <b>${esc(l.contattato_tramite || '—')}</b>.`);
+  const cifre = numeroCifre(l.telefono);
+  if (cifre.length >= 6) {
+    const altri = LEADS.filter(x => x.id !== l.id && (x.n_contatti || 0) > 0 && numeroCifre(x.telefono) === cifre);
+    if (altri.length) righe.push(`⚠ Stesso numero di <b>${esc(altri[0].nome_azienda)}</b>, già contattato ${altri[0].ultimo_contatto_il ? 'il ' + dataOra(altri[0].ultimo_contatto_il) : 'in passato'}.`);
+  }
+  box.innerHTML = righe.length ? `<div class="avviso-doppio">${righe.join('<br>')}</div>` : '';
+}
+
+async function caricaStorico(id) {
+  const ul = document.getElementById('storico'); if (!ul) return;
+  const { data } = await sb.from('eventi').select('*').eq('lead_id', id).order('creato_il', { ascending: false });
+  const l = LEAD_CORRENTE; if (!l || l.id !== id) return;
+  const righe = (data || []).map(e => {
+    let t = '';
+    if (e.tipo === 'invio') t = `Messaggio inviato via <b>${esc(e.canale)}</b>${e.messaggio ? ' (' + (ETICHETTE_BOZZE[e.messaggio] || e.messaggio) + ')' : ''}`;
+    else if (e.tipo === 'esito') t = `Esito: <b>${NOMI_ESITO[e.esito] || e.esito}</b>${e.motivo ? ' — ' + esc(MOTIVI_NO[e.motivo] || e.motivo) : ''}`;
+    else if (e.tipo === 'archivio') t = `Archiviato: ${esc(NOMI_ARCHIVIO[e.motivo] || e.motivo || '')}${e.dettaglio === 'automatico' ? ' (automatico)' : ''}`;
+    else if (e.tipo === 'ripristino') t = 'Rimesso fra gli attivi';
+    else t = esc(e.dettaglio || e.tipo);
+    const chi = e.creato_da && e.creato_da !== 'sistema' ? ` <span class="quando">· ${esc(e.creato_da.split('@')[0])}</span>` : '';
+    return `<li class="${e.tipo}"><span class="quando">${dataOra(e.creato_il)}</span>${t}${chi}</li>`;
+  });
+  if (l.archivio_motivo === 'contattati_prima_del_2026-09-18' || (l.stato_kanban !== 'da_contattare' && !l.primo_contatto_il))
+    righe.push(`<li class="invio"><span class="quando">prima del 18/09/2026</span>Contattato${l.contattato_tramite ? ' via <b>' + esc(l.contattato_tramite) + '</b>' : ''} (senza data: storico precedente al CRM online)</li>`);
+  righe.push(`<li><span class="quando">${esc(l.data_trovato)}</span>Trovato dall'agente (${esc(l.fonte || 'ricerca')})</li>`);
+  ul.innerHTML = righe.join('');
+}
+
+/* ------------------------------------------------------------ salvataggi */
+async function aggiornaLead(l, campi, evento) {
+  Object.assign(l, campi);
+  filtra();
+  const { error } = await sb.from('leads').update({ ...campi, aggiornato_da: 'dashboard' }).eq('id', l.id);
+  if (error) { pillSync('err', '☁ errore salvataggio'); console.error(error); alert('Non salvato: ' + error.message); return false; }
+  if (evento) {
+    const { data } = await sb.from('eventi').insert({ lead_id: l.id, creato_da: UTENTE, ...evento }).select().single();
+    if (data && !EVENTI_RECENTI.some(x => x.id === data.id)) { EVENTI_RECENTI.unshift(data); aggiornaStats(); }
+  }
+  if (LEAD_CORRENTE && LEAD_CORRENTE.id === l.id) {
+    const es = document.getElementById('blocco-esiti'); if (es) es.innerHTML = htmlEsiti(l);
+    const tabs = document.getElementById('outreach-tabs'); if (tabs) { tabs.innerHTML = linguetteOutreach(l); mostraBozza(BOZZA_CORRENTE); }
+    caricaStorico(l.id); avvisoDoppio(l);
+  }
+  return true;
+}
+
 async function salvaCampoLead(campo, valore) {
   if (!LEAD_CORRENTE || !CAMPI_MODIFICABILI.has(campo)) return;
   const l = LEAD_CORRENTE;
   if (campo === 'contattato_tramite' && !valore) valore = null;
-  if ((l[campo] ?? '') === (valore ?? '')) return;     // niente da salvare
-  l[campo] = valore;
-  filtra();
+  if ((l[campo] ?? '') === (valore ?? '')) return;
   const avviso = document.getElementById('salva-campo-avviso');
-  const { error } = await sb.from('leads').update({ [campo]: valore, aggiornato_da: 'dashboard' }).eq('id', l.id);
-  if (avviso) {
-    avviso.textContent = error ? '⚠ Non salvato: ' + error.message : '✓ Salvato su tutti i dispositivi';
-    avviso.style.color = error ? '#ffc077' : '#8fdc8f';
-    setTimeout(() => { if (avviso) avviso.textContent = ''; }, 2500);
-  }
-  if (error) { pillSync('err', '☁ errore salvataggio'); console.error(error); }
+  const ok = await aggiornaLead(l, { [campo]: valore }, null);
+  if (avviso) { avviso.textContent = ok ? '✓ Salvato su tutti i dispositivi' : '⚠ Non salvato'; avviso.style.color = ok ? '#8fdc8f' : '#ffc077'; setTimeout(() => { if (avviso) avviso.textContent = ''; }, 2500); }
 }
 
-function cambiaStato(nuovoStato) { salvaCampoLead('stato_kanban', nuovoStato); }
-function cambiaCanaleContatto(canale) { salvaCampoLead('contattato_tramite', canale); }
+// Segna l'invio: contatto, canale, data, storico — senza clic in piu'
+async function registraInvio(l, canale, chiaveMsg) {
+  const ora = new Date().toISOString();
+  const campi = { contattato_tramite: canale, n_contatti: (l.n_contatti || 0) + 1, ultimo_contatto_il: ora };
+  if (!l.primo_contatto_il) campi.primo_contatto_il = ora;
+  if (l.stato_kanban === 'da_contattare') campi.stato_kanban = 'contattato';
+  if (l.archiviato || l.stato_kanban === 'non_interessato') {   // riscrivere a un archiviato lo rimette in gioco
+    Object.assign(campi, { archiviato: false, archiviato_il: null, archivio_motivo: null, esito: null, motivo_no: null, stato_kanban: 'contattato' });
+  }
+  if (colonnaDi(l) === 'da_richiamare') chiaveMsg = 'richiamo';
+  return aggiornaLead(l, campi, { tipo: 'invio', canale, messaggio: chiaveMsg });
+}
 
-/* ------------------------------------------------------------
-   MESSAGGI DI CONTATTO: copia, WhatsApp, Instagram, Email
-   ------------------------------------------------------------ */
+async function segnaEsito(esito, motivo) {
+  const l = LEAD_CORRENTE; if (!l) return;
+  document.getElementById('motivi')?.classList.remove('active');
+  const campi = { esito };
+  let evento = { tipo: 'esito', esito, motivo: motivo || null };
+  const disarchivia = { archiviato: false, archiviato_il: null, archivio_motivo: null };
+  if (esito === 'chiede_info') Object.assign(campi, { stato_kanban: 'risposto' }, disarchivia);
+  if (esito === 'risentire') { const d = new Date(); d.setDate(d.getDate() + (REGOLE.giorni_risentire || 90)); Object.assign(campi, { stato_kanban: 'risposto', risentire_il: d.toLocaleDateString('sv-SE') }, disarchivia); }
+  if (esito === 'cliente') Object.assign(campi, { stato_kanban: 'cliente' }, disarchivia);
+  if (esito === 'non_interessato') Object.assign(campi, { stato_kanban: 'non_interessato', motivo_no: motivo || null, archiviato: true, archiviato_il: new Date().toISOString(), archivio_motivo: 'non_interessato' });
+  if (esito === 'nessuna_risposta') { Object.assign(campi, { archiviato: true, archiviato_il: new Date().toISOString(), archivio_motivo: 'nessuna_risposta' }); evento = { tipo: 'archivio', motivo: 'nessuna_risposta' }; }
+  if (l.stato_kanban === 'da_contattare' && !(l.n_contatti > 0) && esito !== 'nessuna_risposta') campi.n_contatti = 1;
+  await aggiornaLead(l, campi, evento);
+}
+
+async function ripristina() {
+  const l = LEAD_CORRENTE; if (!l) return;
+  const campi = { archiviato: false, archiviato_il: null, archivio_motivo: null };
+  if (l.esito === 'nessuna_risposta' || l.esito === 'non_interessato') { campi.esito = null; campi.motivo_no = null; }
+  if (l.stato_kanban === 'non_interessato') campi.stato_kanban = 'contattato';
+  await aggiornaLead(l, campi, { tipo: 'ripristino' });
+}
+
+function cambiaDataRisentire(ev) {
+  ev.preventDefault();
+  const l = LEAD_CORRENTE; if (!l) return;
+  const v = prompt('Quando risentirli? (formato AAAA-MM-GG)', l.risentire_il || oggiLocale(90));
+  if (v && /^\d{4}-\d{2}-\d{2}$/.test(v)) aggiornaLead(l, { risentire_il: v }, { tipo: 'nota', dettaglio: 'Promemoria spostato al ' + v });
+}
+
+/* ------------------------------------------------------------ messaggi di contatto */
 const ETICHETTE_BOZZE = {
   generico: '1 · Primo contatto',
   social:   '2 · Non fa ancora social',
   email:    '3 · Email (aziende strutturate)',
+  richiamo: '↻ Richiamo (2° messaggio)',
   inviato:  '✓ Messaggio già inviato',
 };
 const EMAIL_MITTENTE = CFG.EMAIL_MITTENTE || 'videomakercristianleoni@gmail.com';
 
+function testoRichiamo(l) { return MSG_RICHIAMO.replace(/\{nome\}/g, nomeBreve(l) || 'a tutti'); }
 function bozzaIniziale(l) {
+  if (colonnaDi(l) === 'da_richiamare') return 'richiamo';
   return (l.stato_kanban && l.stato_kanban !== 'da_contattare' && haMessaggioInviato(l)) ? 'inviato' : 'generico';
 }
 function haMessaggioInviato(l) {
@@ -1051,13 +1296,12 @@ function haMessaggioInviato(l) {
   return !!t && t !== (b.generico||'').trim() && t !== (b.social||'').trim() && t !== (b.email||'').trim();
 }
 function linguetteOutreach(l) {
-  const b = l.bozze_outreach;
-  if (!b) return '';
-  const chiavi = ['generico', 'social', 'email'];
+  const chiavi = l.bozze_outreach ? ['generico', 'social', 'email'] : [];
+  if ((l.n_contatti || 0) > 0 || l.stato_kanban !== 'da_contattare') chiavi.push('richiamo');
   if (haMessaggioInviato(l)) chiavi.unshift('inviato');
   const iniziale = bozzaIniziale(l);
   return chiavi.map(k =>
-    `<button class="outreach-tab${k===iniziale?' attiva':''}${k==='inviato'?' inviato':''}" data-bozza="${k}" onclick="mostraBozza('${k}')">${ETICHETTE_BOZZE[k]}</button>`
+    `<button class="outreach-tab${k===iniziale?' attiva':''}${k==='inviato'?' inviato':''}${k==='richiamo'?' richiamo':''}" data-bozza="${k}" onclick="mostraBozza('${k}')">${ETICHETTE_BOZZE[k]}</button>`
   ).join('');
 }
 function mostraBozza(chiave) {
@@ -1065,6 +1309,7 @@ function mostraBozza(chiave) {
   const b = l.bozze_outreach || {};
   let testo = '', oggetto = '';
   if (chiave === 'inviato')       testo = l.bozza_outreach || '';
+  else if (chiave === 'richiamo') testo = testoRichiamo(l);
   else if (chiave === 'email')    { testo = b.email || ''; oggetto = b.email_oggetto || ''; }
   else                            testo = b[chiave] || '';
   if (!b.generico && !testo) testo = l.bozza_outreach || '—';
@@ -1075,6 +1320,7 @@ function mostraBozza(chiave) {
   document.querySelectorAll('.outreach-tab').forEach(t => t.classList.toggle('attiva', t.dataset.bozza === chiave));
   BOZZA_CORRENTE = chiave;
 }
+function testoCorrente() { return document.getElementById('outreach-text')?.textContent || ''; }
 
 function numeroWhatsapp(tel) {
   let n = (tel || '').replace(/[^\d+]/g, '');
@@ -1083,37 +1329,59 @@ function numeroWhatsapp(tel) {
   return '39' + n;
 }
 
-// WhatsApp col messaggio gia' scritto. Sul telefono apre l'app; sul PC l'app desktop.
-// L'invio resta un tuo clic.
-function apriWhatsApp() {
-  if (!LEAD_CORRENTE || !LEAD_CORRENTE.telefono) return;
-  const numero = numeroWhatsapp(LEAD_CORRENTE.telefono);
-  const testo = encodeURIComponent(document.getElementById('outreach-text').textContent);
+// Conferma prima di riscrivere a chi e' gia' stato contattato (tranne i richiami previsti)
+function confermaSeDoppio(l) {
+  if (colonnaDi(l) === 'da_richiamare') return true;
+  if ((l.n_contatti || 0) > 0)
+    return confirm(`Avete già scritto a "${l.nome_azienda}" ${l.ultimo_contatto_il ? 'il ' + dataOra(l.ultimo_contatto_il) : 'prima del 18/09'} via ${l.contattato_tramite || '—'}.\n\nVuoi scrivere di nuovo?`);
+  const cifre = numeroCifre(l.telefono);
+  const altro = cifre.length >= 6 && LEADS.find(x => x.id !== l.id && (x.n_contatti || 0) > 0 && numeroCifre(x.telefono) === cifre);
+  if (altro) return confirm(`Attenzione: "${altro.nome_azienda}" ha lo stesso numero ed è già stato contattato.\n\nVuoi scrivere comunque?`);
+  return true;
+}
+function whatsappOltreLimite() {
+  const n = EVENTI_RECENTI.filter(e => e.tipo === 'invio' && e.canale === 'WhatsApp' && e.creato_il >= inizioGiornoISO()).length;
+  if (n >= (REGOLE.whatsapp_max_giorno || 90)) return !confirm(`Oggi avete già mandato ${n} WhatsApp: siete al limite giornaliero (${REGOLE.whatsapp_max_giorno}). Rischi il blocco del numero.\n\nMandare comunque?`);
+  return false;
+}
+
+// Dalla card o dalla scheda: apre la scheda, registra l'invio, poi apre il canale
+async function azioneRapida(id, canale) {
+  const l = LEADS.find(x => x.id === id); if (!l) return;
+  if (!LEAD_CORRENTE || LEAD_CORRENTE.id !== id) await apriModal(id);
+  if (!LEAD_CORRENTE || LEAD_CORRENTE.id !== id) return;
+  if (canale === 'wa') apriWhatsApp();
+  else if (canale === 'ig') apriDM();
+  else if (canale === 'mail') apriEmail();
+}
+
+async function apriWhatsApp() {
+  const l = LEAD_CORRENTE; if (!l || !l.telefono) return;
+  if (!eCellulare(l.telefono) && !confirm('Questo sembra un numero fisso: WhatsApp probabilmente non c\'è. Provare comunque?')) return;
+  if (!confermaSeDoppio(l) || whatsappOltreLimite()) return;
+  const numero = numeroWhatsapp(l.telefono);
+  const testo = encodeURIComponent(testoCorrente());
+  await registraInvio(l, 'WhatsApp', BOZZA_CORRENTE);
   window.location.href = MOBILE ? `https://wa.me/${numero}?text=${testo}` : `whatsapp://send?phone=${numero}&text=${testo}`;
 }
 
-// Email: sul PC apre Gmail web con il tuo account; sul telefono l'app di posta (Gmail).
-function apriEmail() {
+async function apriEmail() {
   const l = LEAD_CORRENTE; if (!l || !l.email) return;
+  if (!confermaSeDoppio(l)) return;
   const b = l.bozze_outreach || {};
   const oggetto = b.email_oggetto || 'Una proposta per la vostra comunicazione video';
-  const corpo   = b.email || document.getElementById('outreach-text').textContent;
-  if (MOBILE) {
-    window.location.href = `mailto:${encodeURIComponent(l.email)}?subject=${encodeURIComponent(oggetto)}&body=${encodeURIComponent(corpo)}`;
-    return;
-  }
-  const url = 'https://mail.google.com/mail/?view=cm&fs=1'
-    + '&authuser=' + encodeURIComponent(EMAIL_MITTENTE)
-    + '&to=' + encodeURIComponent(l.email)
-    + '&su=' + encodeURIComponent(oggetto)
-    + '&body=' + encodeURIComponent(corpo);
-  window.open(url, '_blank');
+  const corpo   = BOZZA_CORRENTE === 'richiamo' ? testoRichiamo(l) : (b.email || testoCorrente());
+  const finestra = MOBILE ? null : window.open('', '_blank');   // aperta prima dell'await: altrimenti il browser la blocca
+  await registraInvio(l, 'Email', BOZZA_CORRENTE === 'richiamo' ? 'richiamo' : 'email');
+  if (MOBILE) { window.location.href = `mailto:${encodeURIComponent(l.email)}?subject=${encodeURIComponent(oggetto)}&body=${encodeURIComponent(corpo)}`; return; }
+  const url = 'https://mail.google.com/mail/?view=cm&fs=1&authuser=' + encodeURIComponent(EMAIL_MITTENTE)
+    + '&to=' + encodeURIComponent(l.email) + '&su=' + encodeURIComponent(oggetto) + '&body=' + encodeURIComponent(corpo);
+  if (finestra) finestra.location.href = url; else window.open(url, '_blank');
 }
 
 async function copiaTesto(t) {
   try { await navigator.clipboard.writeText(t); return true; }
   catch (e) {
-    // iOS vecchi / contesti senza clipboard API
     const ta = document.createElement('textarea'); ta.value = t; ta.style.position = 'fixed'; ta.style.opacity = '0';
     document.body.appendChild(ta); ta.focus(); ta.select();
     let ok = false; try { ok = document.execCommand('copy'); } catch (_) {}
@@ -1121,46 +1389,52 @@ async function copiaTesto(t) {
   }
 }
 async function copiaOutreach() {
-  const t = document.getElementById('outreach-text').textContent;
-  const ok = await copiaTesto(t);
-  const btn = document.querySelector('.btn-copia');
-  btn.textContent = ok ? '✅ Copiato!' : '⚠ Copia a mano';
-  setTimeout(() => btn.textContent = '📋 Copia Messaggio', 2000);
+  const ok = await copiaTesto(testoCorrente());
+  const btn = document.querySelector('.outreach-box .btn-copia');
+  if (btn) { btn.textContent = ok ? '✅ Copiato!' : '⚠ Copia a mano'; setTimeout(() => btn.textContent = '📋 Copia Messaggio', 2000); }
 }
 
-// Instagram: copia il messaggio e apre la chat DM (sul telefono si apre l'app Instagram).
 async function apriDM() {
-  const t = document.getElementById('outreach-text').textContent;
-  const ig = (LEAD_CORRENTE && LEAD_CORRENTE.instagram) || '';
+  const l = LEAD_CORRENTE; if (!l) return;
+  const ig = l.instagram || '';
   const user = ig.replace(/^https?:\/\/(www\.)?instagram\.com\//i, '').replace(/[/?].*$/, '').replace(/^@/, '').trim();
   if (!user) { alert('Questo lead non ha un profilo Instagram — usa email o telefono.'); return; }
-  // Sul telefono apro subito (i browser bloccano i popup aperti dopo un await), la copia va in parallelo
+  if (!confermaSeDoppio(l)) return;
   const finestra = MOBILE ? null : window.open('', '_blank');
-  const ok = await copiaTesto(t);
+  const ok = await copiaTesto(testoCorrente());
+  await registraInvio(l, 'Instagram', BOZZA_CORRENTE);
   const url = 'https://ig.me/m/' + user;
   if (finestra) finestra.location.href = url; else window.location.href = url;
   if (!ok) alert('Non sono riuscito a copiare il messaggio: usa "Copia Messaggio" e incollalo nella chat.');
 }
 
 /* ============================================================
-   STATISTICHE + CSV (identici)
+   BARRA OGGI + STATISTICHE + CSV
    ============================================================ */
 function aggiornaStats() {
-  document.getElementById('stat-totale').textContent = LEADS_FILTRATI.length;
-  document.getElementById('stat-assoluta').textContent = LEADS_FILTRATI.filter(l => l.priorita === 'ASSOLUTA').length;
-  document.getElementById('stat-alta').textContent = LEADS_FILTRATI.filter(l => l.priorita === 'ALTA').length;
-  document.getElementById('stat-nuovi').textContent = LEADS_FILTRATI.filter(l => l.stato_kanban === 'da_contattare').length;
-  document.getElementById('stat-clienti').textContent = LEADS_FILTRATI.filter(l => l.stato_kanban === 'cliente').length;
-  const scores = LEADS_FILTRATI.map(l => l.lead_score || 0);
-  const media = scores.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) : 0;
-  document.getElementById('stat-score').textContent = media;
+  const conta = {}; COLONNE.forEach(c => conta[c] = 0); let arch = 0;
+  LEADS.forEach(l => { const c = colonnaDi(l); if (c === 'archivio') arch++; else conta[c]++; });
+  COLONNE.forEach(c => { const el = document.getElementById('st-' + c); if (el) el.textContent = conta[c]; });
+  const scaduti = LEADS.filter(l => colonnaDi(l) === 'risentire' && l.risentire_il && l.risentire_il <= oggiLocale()).length;
+  const elR = document.getElementById('st-risentire'); if (elR) elR.innerHTML = conta.risentire + (scaduti ? `<span class="stat-su" style="color:#ffc077"> · ${scaduti} ora</span>` : '');
+  document.getElementById('cnt-archivio').textContent = arch;
+
+  const oggi = inizioGiornoISO(), ieri = inizioGiornoISO(-1);
+  const inviatiOggi = EVENTI_RECENTI.filter(e => e.tipo === 'invio' && e.creato_il >= oggi).length;
+  const inviatiIeri = EVENTI_RECENTI.filter(e => e.tipo === 'invio' && e.creato_il >= ieri && e.creato_il < oggi).length;
+  document.getElementById('st-inviati').textContent = inviatiOggi;
+  document.getElementById('st-inviati-ieri').textContent = `· ieri ${inviatiIeri}`;
+  const wa = EVENTI_RECENTI.filter(e => e.tipo === 'invio' && e.canale === 'WhatsApp' && e.creato_il >= oggi).length;
+  const max = REGOLE.whatsapp_max_giorno || 90, avv = REGOLE.whatsapp_avviso || 80;
+  document.getElementById('st-wa').innerHTML = `${wa}<span class="stat-su">/${max}</span>`;
+  document.getElementById('stat-wa').className = 'stat st-wa ' + (wa >= max ? 'stop' : wa >= avv ? 'avviso' : 'ok');
 }
 
 function esportaCSV() {
-  const cols = ['lead_score','priorita','nome_azienda','categoria','citta','telefono','email','sito_web','instagram','facebook','linkedin','canale_consigliato','stato_kanban','contattato_tramite'];
+  const cols = ['lead_score','priorita','nome_azienda','categoria','citta','telefono','email','sito_web','instagram','facebook','linkedin','contattato_tramite','stato_kanban','esito','motivo_no','n_contatti','primo_contatto_il','ultimo_contatto_il','risentire_il','archivio_motivo','note_crm'];
   const righe = [cols.join(',')];
-  LEADS_FILTRATI.forEach(l => righe.push(cols.map(c => `"${(l[c]||'').toString().replace(/"/g,'""')}"`).join(',')));
-  const blob = new Blob([righe.join('\n')], {type:'text/csv;charset=utf-8;'});
+  LEADS_FILTRATI.forEach(l => righe.push(cols.map(c => `"${(l[c] ?? '').toString().replace(/"/g,'""')}"`).join(',')));
+  const blob = new Blob(['﻿' + righe.join('\n')], {type:'text/csv;charset=utf-8;'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = `leads_${new Date().toISOString().slice(0,10)}.csv`;
@@ -1169,18 +1443,6 @@ function esportaCSV() {
 
 const CANALE_COLORI = { WhatsApp: '#5fe58a', Instagram: '#dba8ff', Facebook: '#a3b3ff', LinkedIn: '#8fd0ff', Email: '#8fdc8f', Telefono: '#ffc966', 'Di persona': '#ff8a8a' };
 let GRAFICI = {};
-
-function nascondiViste() {
-  ['ricerca-view', 'stats-view', 'lista-view'].forEach(id => document.getElementById(id).classList.remove('active'));
-  ['btn-ricerca-toggle', 'btn-stats-toggle'].forEach(id => document.getElementById(id).classList.remove('active'));
-  document.getElementById('kanban-view').classList.add('hidden');
-  document.getElementById('kanban-tabs').style.display = 'none';
-}
-function mostraKanbanOLista() {
-  document.querySelector('.btn-lista').textContent = VISTA_LISTA ? '🗂 Kanban' : '📋 Lista';
-  if (VISTA_LISTA) { document.getElementById('lista-view').classList.add('active'); renderLista(); }
-  else { document.getElementById('kanban-view').classList.remove('hidden'); document.getElementById('kanban-tabs').style.display = MOBILE ? 'flex' : 'none'; renderKanban(); }
-}
 
 function toggleStats() {
   const view = document.getElementById('stats-view');
@@ -1197,12 +1459,12 @@ function renderCharts() {
   Chart.defaults.font.family = "-apple-system, 'Segoe UI', sans-serif";
   Object.values(GRAFICI).forEach(c => c && c.destroy());
 
-  const STATI_LABEL = { da_contattare: 'Da Contattare', contattato: 'Contattato', risposto: 'Risposto', cliente: 'Cliente', non_interessato: 'Non Interessato' };
-  const STATI_COLORI = ['#a3b3ff', '#8fdc8f', '#ffc966', '#dba8ff', '#767d8c'];
-  const contiStati = STATI.map(s => LEADS.filter(l => l.stato_kanban === s).length);
+  // 1) dove sono i lead oggi
+  const chiavi = [...COLONNE, 'archivio'];
+  const conti = chiavi.map(c => LEADS.filter(l => colonnaDi(l) === c).length);
   GRAFICI.funnel = new Chart(document.getElementById('chart-funnel'), {
     type: 'bar',
-    data: { labels: STATI.map(s => STATI_LABEL[s]), datasets: [{ data: contiStati, backgroundColor: STATI_COLORI, borderRadius: 8, maxBarThickness: 40 }] },
+    data: { labels: chiavi.map(c => NOMI_COLONNE[c]), datasets: [{ data: conti, backgroundColor: ['#a3b3ff', '#b6bccb', '#dba8ff', '#ffc966', '#8fd0ff', '#8fdc8f', '#767d8c'], borderRadius: 8, maxBarThickness: 40 }] },
     options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { grid: { color: glassGrid } }, y: { grid: { display: false } } } }
   });
 
@@ -1215,13 +1477,16 @@ function renderCharts() {
     options: { plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { grid: { color: glassGrid }, beginAtZero: true } } }
   });
 
+  // 3) categorie: contattati vs risposte (chiede info / risentire / cliente)
   const perCat = {};
-  LEADS.forEach(l => { if (l.categoria) perCat[l.categoria] = (perCat[l.categoria] || 0) + 1; });
-  const topCat = Object.entries(perCat).sort((a, b) => b[1] - a[1]).slice(0, 10);
+  LEADS.forEach(l => { if (!l.categoria || !(l.n_contatti > 0)) return; const c = perCat[l.categoria] = perCat[l.categoria] || { tot: 0, risp: 0 }; c.tot++; if (['chiede_info', 'risentire', 'cliente'].includes(l.esito)) c.risp++; });
+  const topCat = Object.entries(perCat).sort((a, b) => b[1].tot - a[1].tot).slice(0, 10);
   GRAFICI.categorie = new Chart(document.getElementById('chart-categorie'), {
     type: 'bar',
-    data: { labels: topCat.map(c => c[0]), datasets: [{ data: topCat.map(c => c[1]), backgroundColor: '#c87dff', borderRadius: 6, maxBarThickness: 28 }] },
-    options: { indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { grid: { color: glassGrid } }, y: { grid: { display: false } } } }
+    data: { labels: topCat.map(c => c[0]), datasets: [
+      { label: 'Contattati', data: topCat.map(c => c[1].tot), backgroundColor: '#c87dff', borderRadius: 6, maxBarThickness: 22 },
+      { label: 'Hanno risposto', data: topCat.map(c => c[1].risp), backgroundColor: '#8fdc8f', borderRadius: 6, maxBarThickness: 22 }] },
+    options: { indexAxis: 'y', plugins: { legend: { position: 'bottom' } }, scales: { x: { grid: { color: glassGrid } }, y: { grid: { display: false } } } }
   });
 
   const perCanale = {};
@@ -1233,15 +1498,56 @@ function renderCharts() {
       data: { labels: canali, datasets: [{ data: canali.map(c => perCanale[c]), backgroundColor: canali.map(c => CANALE_COLORI[c] || '#888') }] },
       options: { plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 12 } } } }
     });
-  } else {
-    const ctx = document.getElementById('chart-canali').getContext('2d');
-    ctx.font = '13px sans-serif'; ctx.fillStyle = '#767d8c'; ctx.textAlign = 'center';
-    ctx.fillText('Nessun lead segnato come "contattato tramite..." ancora', ctx.canvas.width / 2, ctx.canvas.height / 2);
   }
 }
 
 /* ============================================================
-   NUOVA RICERCA — va in coda sul cloud, la esegue il PC fisso
+   MANUTENZIONE GIORNALIERA (chi apre il CRM per primo la fa girare)
+   - archivia chi non ha risposto oltre i giorni previsti
+   - assegna i richiami del giorno (i migliori per punteggio)
+   ============================================================ */
+async function manutenzioneGiornaliera() {
+  const oggi = oggiLocale();
+  const { data } = await sb.from('impostazioni').select('valore').eq('chiave', 'manutenzione_il').maybeSingle();
+  if (data?.valore === oggi) return;
+  await sb.from('impostazioni').upsert({ chiave: 'manutenzione_il', valore: oggi, aggiornato_il: new Date().toISOString() });
+
+  const limiteAttesa = Date.now() - (REGOLE.giorni_attesa_prima_di_archiviare || 10) * 86400000;
+  const limiteRichiamo = Date.now() - (REGOLE.giorni_prima_del_richiamo || 7) * 86400000;
+  const ora = new Date().toISOString();
+
+  // 1) archivio automatico "nessuna risposta"
+  const daArchiviare = LEADS.filter(l => {
+    const c = colonnaDi(l); if (c !== 'in_attesa' && c !== 'da_richiamare') return false;
+    if (!l.ultimo_contatto_il) return false;                       // storici senza data: gia' in archivio
+    const t = new Date(l.ultimo_contatto_il).getTime();
+    if ((l.n_contatti || 0) >= 2) return t < limiteAttesa;         // dopo il richiamo: 10 giorni e via
+    if (c === 'da_richiamare') return t < limiteAttesa - 10 * 86400000;   // richiamo assegnato ma mai fatto: 20 giorni
+    // primo messaggio, mai scelto per il richiamo (punteggio basso): 10 giorni e via
+    return t < limiteAttesa && (l.lead_score || 0) < (REGOLE.score_minimo_richiamo || 60);
+  });
+  for (let i = 0; i < daArchiviare.length; i += 100) {
+    const blocco = daArchiviare.slice(i, i + 100);
+    await sb.from('leads').update({ archiviato: true, archiviato_il: ora, archivio_motivo: 'nessuna_risposta', esito: 'nessuna_risposta', aggiornato_da: 'dashboard' }).in('id', blocco.map(l => l.id));
+    await sb.from('eventi').insert(blocco.map(l => ({ lead_id: l.id, tipo: 'archivio', motivo: 'nessuna_risposta', dettaglio: 'automatico', creato_da: 'sistema' })));
+    blocco.forEach(l => Object.assign(l, { archiviato: true, archiviato_il: ora, archivio_motivo: 'nessuna_risposta', esito: 'nessuna_risposta' }));
+  }
+
+  // 2) richiami del giorno: riempio fino alla dose
+  const pendenti = LEADS.filter(l => colonnaDi(l) === 'da_richiamare').length;
+  const posti = Math.max(0, (REGOLE.richiami_al_giorno || 30) - pendenti);
+  const candidati = LEADS.filter(l => colonnaDi(l) === 'in_attesa' && (l.n_contatti || 0) === 1 && !l.richiamo_assegnato_il
+      && l.ultimo_contatto_il && new Date(l.ultimo_contatto_il).getTime() < limiteRichiamo && (l.lead_score || 0) >= (REGOLE.score_minimo_richiamo || 60))
+    .sort((a, b) => (b.lead_score || 0) - (a.lead_score || 0)).slice(0, posti);
+  if (candidati.length) {
+    await sb.from('leads').update({ richiamo_assegnato_il: oggi, aggiornato_da: 'dashboard' }).in('id', candidati.map(l => l.id));
+    candidati.forEach(l => l.richiamo_assegnato_il = oggi);
+  }
+  if (daArchiviare.length || candidati.length) { console.log(`manutenzione: archiviati ${daArchiviare.length}, richiami assegnati ${candidati.length}`); filtra(); }
+}
+
+/* ============================================================
+   NUOVA RICERCA — coda sul cloud, la esegue il PC
    ============================================================ */
 const CREMONA = { lat: 45.220864, lng: 10.037038, nome: "Cremona" };
 let CATEGORIE_SELEZIONATE = new Set();
@@ -1270,7 +1576,7 @@ function caricaCategorie() {
   const container = document.getElementById('cat-sezioni-container');
   const dati = CATEGORIE_CLOUD;
   if (!dati || !dati.sezioni) {
-    container.innerHTML = '<p style="color:#9aa1b2;font-size:0.8rem;">Elenco categorie non ancora pubblicato dal PC: accendilo una volta con AVVIA_SYNC_CLOUD.bat. Puoi comunque scrivere una categoria qui sotto.</p>';
+    container.innerHTML = '<p style="color:#9aa1b2;font-size:0.8rem;">Elenco categorie non ancora pubblicato dal PC: accendilo una volta. Puoi comunque scrivere una categoria qui sotto.</p>';
     return;
   }
   container.innerHTML = '';
@@ -1283,13 +1589,11 @@ function caricaCategorie() {
     container.appendChild(div);
   });
 }
-
 function toggleCategoria(el) {
   const cat = el.dataset.cat;
   if (CATEGORIE_SELEZIONATE.has(cat)) { CATEGORIE_SELEZIONATE.delete(cat); el.classList.remove('selezionata'); }
   else { CATEGORIE_SELEZIONATE.add(cat); el.classList.add('selezionata'); }
 }
-
 function initMappa() {
   MAPPA = L.map('mappa-raggio').setView([CREMONA.lat, CREMONA.lng], 7);
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap contributors', maxZoom: 18 }).addTo(MAPPA);
@@ -1300,7 +1604,6 @@ function initMappa() {
   MAPPA.on('click', e => { MARKER_EPICENTRO.setLatLng(e.latlng); aggiornaEpicentro(e.latlng, true); });
   setTimeout(() => MAPPA.invalidateSize(), 100);
 }
-
 function aggiornaEpicentro(latlng, cercaNome) {
   EPICENTRO.lat = latlng.lat; EPICENTRO.lng = latlng.lng;
   CERCHIO_RAGGIO.setLatLng(latlng);
@@ -1309,52 +1612,41 @@ function aggiornaEpicentro(latlng, cercaNome) {
     document.getElementById('epicentro-nome-label').textContent = EPICENTRO.nome;
     fetch(`https://nominatim.openstreetmap.org/reverse?lat=${latlng.lat}&lon=${latlng.lng}&format=json&zoom=10`)
       .then(r => r.json())
-      .then(d => {
-        const nome = d?.address?.town || d?.address?.city || d?.address?.village || d?.address?.municipality;
-        if (nome) { EPICENTRO.nome = nome; document.getElementById('epicentro-nome-label').textContent = nome; }
-      }).catch(() => {});
+      .then(d => { const nome = d?.address?.town || d?.address?.city || d?.address?.village || d?.address?.municipality; if (nome) { EPICENTRO.nome = nome; document.getElementById('epicentro-nome-label').textContent = nome; } })
+      .catch(() => {});
   }
 }
-
 function aggiornaRaggio() {
   const km = parseInt(document.getElementById('raggio-slider').value, 10);
   document.getElementById('raggio-val').textContent = `${km} km`;
   if (CERCHIO_RAGGIO) CERCHIO_RAGGIO.setRadius(km * 1000);
   if (MAPPA) { const zoom = km > 150 ? 6 : km > 70 ? 7 : km > 30 ? 8 : 9; MAPPA.setView([EPICENTRO.lat, EPICENTRO.lng], zoom); }
 }
-
 async function avviaRicerca() {
   const custom = document.getElementById('cat-custom').value.trim();
   const categorie = [...CATEGORIE_SELEZIONATE];
   if (custom) categorie.push(custom);
   const km = parseInt(document.getElementById('raggio-slider').value, 10);
   const numLead = parseInt(document.getElementById('num-lead').value, 10) || 150;
-
   const { data, error } = await sb.from('richieste_ricerca')
-    .insert({ categorie: categorie.join(', '), zona: String(km), numero_lead: numLead, epicentro: EPICENTRO })
-    .select().single();
+    .insert({ categorie: categorie.join(', '), zona: String(km), numero_lead: numLead, epicentro: EPICENTRO }).select().single();
   if (error) { alert('Impossibile mettere in coda la ricerca: ' + error.message); return; }
   RICHIESTA_CORRENTE = data.id;
   mostraStatoRicerca(data);
   avviaPollRicerca();
 }
-
 async function fermaRicerca() {
   if (!RICHIESTA_CORRENTE) return;
   const { data } = await sb.from('richieste_ricerca').select('stato').eq('id', RICHIESTA_CORRENTE).single();
-  const nuovo = (data?.stato === 'in_attesa') ? 'fermata' : 'da_fermare';   // se il PC non l'ha ancora presa, basta annullarla
+  const nuovo = (data?.stato === 'in_attesa') ? 'fermata' : 'da_fermare';
   await sb.from('richieste_ricerca').update({ stato: nuovo }).eq('id', RICHIESTA_CORRENTE);
   document.getElementById('btn-ferma-ricerca').textContent = nuovo === 'fermata' ? '■ Annullata' : '■ Fermo…';
 }
-
-// Se riapri la pagina mentre una ricerca e' in coda o in corso, la ritrovi
 async function riprendiRicercaInCorso() {
   if (RICHIESTA_CORRENTE) return;
-  const { data } = await sb.from('richieste_ricerca').select('*')
-    .in('stato', ['in_attesa', 'in_corso', 'da_fermare']).order('creata_il', { ascending: false }).limit(1);
+  const { data } = await sb.from('richieste_ricerca').select('*').in('stato', ['in_attesa', 'in_corso', 'da_fermare']).order('creata_il', { ascending: false }).limit(1);
   if (data && data.length) { RICHIESTA_CORRENTE = data[0].id; mostraStatoRicerca(data[0]); avviaPollRicerca(); }
 }
-
 function avviaPollRicerca() {
   clearInterval(POLL_INTERVALLO);
   POLL_INTERVALLO = setInterval(async () => {
@@ -1363,7 +1655,6 @@ function avviaPollRicerca() {
     if (data) mostraStatoRicerca(data);
   }, 5000);
 }
-
 function mostraStatoRicerca(r) {
   const box = document.getElementById('ricerca-stato');
   box.style.display = 'block';
@@ -1372,20 +1663,17 @@ function mostraStatoRicerca(r) {
   const ferma = document.getElementById('btn-ferma-ricerca');
   ferma.style.display = attiva ? 'inline-block' : 'none';
   if (r.stato !== 'da_fermare') ferma.textContent = r.stato === 'in_attesa' ? '✕ Annulla richiesta' : '■ Ferma';
-
   document.getElementById('st-categoria').textContent = r.categoria_corrente || (r.stato === 'in_attesa' ? 'in coda' : '—');
   document.getElementById('st-citta').textContent = r.citta_corrente || '—';
   document.getElementById('st-trovati').textContent = `${r.nuovi_trovati || 0} / ${r.obiettivo || r.numero_lead || '?'}`;
   const obiettivo = r.obiettivo || r.numero_lead || 0;
   document.getElementById('ricerca-barra-fill').style.width = (obiettivo ? Math.min(100, Math.round(100 * (r.nuovi_trovati || 0) / obiettivo)) : 0) + '%';
-
   const ETICH = { in_attesa: pcAcceso() ? '⏳ In coda: il PC la prende tra pochi secondi…' : '⏳ In coda: partirà appena accendi il PC fisso.',
                   in_corso: '▶ Ricerca in corso sul PC', da_fermare: '■ Sto fermando la ricerca…',
                   completata: '✔ Ricerca completata', fermata: '■ Ricerca fermata', errore: '⚠ Ricerca terminata con errore' };
   const logEl = document.getElementById('ricerca-log');
   logEl.textContent = (ETICH[r.stato] || r.stato) + '\n' + (r.log || '');
   logEl.scrollTop = logEl.scrollHeight;
-
   if (!attiva) { clearInterval(POLL_INTERVALLO); RICHIESTA_CORRENTE = null; }
 }
 
@@ -1396,13 +1684,16 @@ let APP_AVVIATA = false;
 async function avviaApp() {
   if (APP_AVVIATA) return;
   APP_AVVIATA = true;
+  const { data: { user } } = await sb.auth.getUser();
+  UTENTE = user?.email || '';
   document.getElementById('kanban-tabs').style.display = MOBILE ? 'flex' : 'none';
-  await Promise.all([caricaLeads(), caricaStatoPC()]);
+  await caricaImpostazioni();
+  await Promise.all([caricaLeads(), caricaEventiRecenti()]);
   ascoltaCambiamenti();
+  manutenzioneGiornaliera().catch(e => console.warn('manutenzione:', e));
 }
 
 (async () => {
-  // Arrivo dal link email (recupero password / invito): prima si sceglie la password
   const hash = new URLSearchParams(location.hash.replace(/^#/, ''));
   const daLink = ['recovery', 'invite', 'magiclink', 'signup'].includes(hash.get('type'));
   sb.auth.onAuthStateChange((evento) => {
