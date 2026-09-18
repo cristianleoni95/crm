@@ -412,6 +412,15 @@
   }
   @media (min-width: 769px) { .cal-pallini { display: none; } }
 
+  .giorno-azioni { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 14px; }
+  .gz { flex: 1 1 45%; padding: 10px 8px; border-radius: var(--r-sm); border: 1px solid transparent; font-size: 0.82rem; font-weight: 700; cursor: pointer; }
+  .gz-app { background: rgba(125,184,255,0.16); color: #9ecbff; border-color: rgba(125,184,255,0.4) !important; }
+  .gz-rip { background: rgba(255,107,107,0.16); color: #ff9a9a; border-color: rgba(255,107,107,0.4) !important; }
+  .gz-con { background: rgba(109,191,109,0.16); color: #8fdc8f; border-color: rgba(109,191,109,0.4) !important; }
+  .gz-pro { background: rgba(255,200,100,0.16); color: #ffd48a; border-color: rgba(255,200,100,0.4) !important; }
+  .gz:hover { filter: brightness(1.2); }
+  #giorno-lista { display: flex; }
+
   /* ===== TELEFONO / TABLET ===== */
   @media (max-width: 900px) {
     .stats-view, .ricerca-view.active { grid-template-columns: 1fr; }
@@ -570,6 +579,16 @@
   <div class="cal-legenda"><span class="ev-appuntamento">Appuntamento</span><span class="ev-riprese">Riprese</span><span class="ev-consegna">Consegna</span><span class="ev-promemoria">Promemoria</span><span class="ev-altro">Altro</span><span class="ev-lead">🤝 da risentire</span><span class="ev-google">Google Calendar</span></div>
   <div class="cal-griglia" id="cal-griglia"></div>
   <div class="cal-agenda" id="cal-agenda" style="display:none"></div>
+</div>
+
+<!-- MODAL GIORNO -->
+<div class="modal-overlay" id="modal-giorno">
+  <div class="modal modal-ev">
+    <button class="modal-close" onclick="chiudiGiorno()">✕</button>
+    <h2 id="giorno-titolo" style="text-transform:capitalize">—</h2>
+    <div class="giorno-azioni"><button class="gz gz-app" onclick="nuovoEventoNelGiorno('appuntamento')">📌 + Appuntamento</button><button class="gz gz-rip" onclick="nuovoEventoNelGiorno('riprese')">🎥 + Riprese</button><button class="gz gz-con" onclick="nuovoEventoNelGiorno('consegna')">📦 + Consegna</button><button class="gz gz-pro" onclick="nuovoEventoNelGiorno('promemoria')">🔔 + Promemoria</button></div>
+    <div class="cal-agenda" id="giorno-lista"></div>
+  </div>
 </div>
 
 <!-- MODAL EVENTO -->
@@ -1929,7 +1948,7 @@ function renderCalendario() {
     const altroMese = d.getMonth() !== CAL_MESE.getMonth();
     if (i >= 35 && altroMese) break;
     const visibili = evs.slice(0, 3);
-    html += `<div class="cal-cella ${altroMese ? 'altro-mese' : ''} ${iso === oggi ? 'oggi' : ''}" onclick="apriEvento(null, null, '${iso}')">
+    html += `<div class="cal-cella ${altroMese ? 'altro-mese' : ''} ${iso === oggi ? 'oggi' : ''}" onclick="apriGiorno('${iso}')">
       <div class="cal-num"><span>${d.getDate()}</span>${evs.length > 3 ? `<span class="cal-piu">+${evs.length - 3}</span>` : ''}</div>
       ${visibili.map(e => `<div class="cal-ev ev-${e.tipo} ${e.fatto ? 'ev-fatto-si' : ''}" onclick="event.stopPropagation();${e.google ? `window.open('${e.link}','_blank')` : e.virtuale ? `apriModal('${e.lead_id}')` : `apriEvento('${e.id}')`}" title="${esc(e.titolo)}">${e.tutto_il_giorno ? '' : oraEv(e) + ' '}${esc(e.titolo)}</div>`).join('')}
       <div class="cal-pallini">${evs.slice(0, 6).map(e => `<span class="cal-pallino ev-${e.tipo}"></span>`).join('')}</div>
@@ -2036,7 +2055,7 @@ async function salvaEvento(ev) {
     if (LEAD_CORRENTE && LEAD_CORRENTE.id === riga.lead_id) caricaStorico(riga.lead_id);
   }
   chiudiEvento();
-  renderCalendario(); aggiornaStats();
+  renderCalendario(); aggiornaStats(); if (typeof renderGiorno === 'function') renderGiorno();
   gcalSincronizzaEvento(salvato).then(() => renderCalendario());
 }
 async function segnaEventoFatto() {
@@ -2243,6 +2262,37 @@ async function gcalSpingiMancanti() {
   for (const e of mancanti) await gcalSincronizzaEvento(e);
   if (mancanti.length) { renderCalendario(); await gcalCaricaEventi(); }
 }
+
+/* ------------------------------------------------------------ vista di un giorno */
+let GIORNO_APERTO = null;
+function apriGiorno(iso) {
+  GIORNO_APERTO = iso;
+  const d = new Date(iso + 'T12:00:00');
+  document.getElementById('giorno-titolo').textContent = d.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  renderGiorno();
+  document.getElementById('modal-giorno').classList.add('active');
+}
+function renderGiorno() {
+  if (!GIORNO_APERTO) return;
+  const evs = eventiDelGiorno(GIORNO_APERTO);
+  const box = document.getElementById('giorno-lista');
+  box.innerHTML = evs.length ? evs.map(e => {
+    const lead = e.lead_id ? LEADS.find(l => l.id === e.lead_id) : null;
+    const azione = e.google ? `window.open('${e.link}','_blank')` : e.virtuale ? `chiudiGiorno();apriModal('${e.lead_id}')` : `chiudiGiorno();apriEvento('${e.id}')`;
+    return `<div class="ag-ev ${e.fatto ? 'ev-fatto-si' : ''}" onclick="${azione}">
+      <div class="ag-ora">${oraEv(e)}</div>
+      <div><div class="ag-titolo">${esc(e.titolo)}<span class="ag-tipo ev-${e.tipo}">${e.google ? 'Google' : e.virtuale ? 'lead' : (TIPI_EV[e.tipo] || e.tipo)}</span></div>
+      <div class="ag-sotto">${[e.luogo, lead && !e.virtuale ? '🤝 ' + lead.nome_azienda : '', e.note].filter(Boolean).map(esc).join(' · ')}</div></div>
+    </div>`;
+  }).join('') : '<div class="empty"><div class="empty-icon">📅</div>Niente in programma in questo giorno.</div>';
+}
+function chiudiGiorno() { document.getElementById('modal-giorno').classList.remove('active'); }
+function nuovoEventoNelGiorno(tipo) {
+  const iso = GIORNO_APERTO; chiudiGiorno();
+  apriEvento(null, null, iso);
+  if (tipo) document.getElementById('ev-tipo').value = tipo;
+}
+document.getElementById('modal-giorno').addEventListener('click', e => { if (e.target === document.getElementById('modal-giorno')) chiudiGiorno(); });
 
 </script>
 </body>
