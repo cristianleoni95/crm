@@ -2159,6 +2159,7 @@ let EVENTI_GOOGLE = [];
 
 function gcalConfigurato() { return !!(CFG.GOOGLE_CLIENT_ID && window.google?.accounts?.oauth2); }
 function gcalCollegato() { return !!GCAL_TOKEN && Date.now() < GCAL_SCADE - 60000; }
+setInterval(() => { if (GCAL_CLIENT && localStorage.getItem('gcal_collegato') === '1' && GCAL_TOKEN && Date.now() > GCAL_SCADE - 5 * 60000 && document.visibilityState === 'visible') gcalRichiediToken(''); }, 60 * 1000);
 
 function gcalInit() {
   if (!gcalConfigurato()) return;
@@ -2170,6 +2171,7 @@ function gcalInit() {
       try { sessionStorage.setItem('gcal_tok', JSON.stringify({ t: GCAL_TOKEN, s: GCAL_SCADE })); } catch (_) {}
       try { localStorage.setItem('gcal_collegato', '1'); } catch (_) {}
       gcalAggiornaBottone();
+      gcalRicordaAccount();
       await gcalCaricaEventi();
       await gcalSpingiMancanti();
     },
@@ -2177,19 +2179,31 @@ function gcalInit() {
   try { const s = JSON.parse(sessionStorage.getItem('gcal_tok') || 'null'); if (s && Date.now() < s.s - 60000) { GCAL_TOKEN = s.t; GCAL_SCADE = s.s; } } catch (_) {}
   gcalAggiornaBottone();
   if (gcalCollegato()) gcalCaricaEventi();
-  else if (localStorage.getItem('gcal_collegato') === '1') { try { GCAL_CLIENT.requestAccessToken({ prompt: '' }); } catch (_) {} }   // rinnovo silenzioso
+  else if (localStorage.getItem('gcal_collegato') === '1') gcalRichiediToken('');   // rinnovo silenzioso, senza scelta account
 }
 function gcalCollega() {
   if (!gcalConfigurato()) { alert('Google Calendar non configurato (manca GOOGLE_CLIENT_ID in config.js).'); return; }
   if (gcalCollegato()) {
     if (confirm('Scollegare Google Calendar da questo dispositivo? Gli eventi già copiati restano su Google.')) {
       GCAL_TOKEN = null; GCAL_SCADE = 0; EVENTI_GOOGLE = [];
-      try { sessionStorage.removeItem('gcal_tok'); localStorage.removeItem('gcal_collegato'); } catch (_) {}
+      try { sessionStorage.removeItem('gcal_tok'); localStorage.removeItem('gcal_collegato'); localStorage.removeItem('gcal_email'); } catch (_) {}
       gcalAggiornaBottone(); renderCalendario();
     }
     return;
   }
-  GCAL_CLIENT.requestAccessToken({ prompt: localStorage.getItem('gcal_collegato') === '1' ? '' : 'consent' });
+  gcalRichiediToken(localStorage.getItem('gcal_collegato') === '1' ? '' : 'consent');
+}
+
+// Chiede il token indicando a Google l'account da usare (hint): cosi' non compare "Scegli un account" ogni volta.
+function gcalRichiediToken(prompt) {
+  const hint = localStorage.getItem('gcal_email') || UTENTE || '';
+  try { GCAL_CLIENT.requestAccessToken(hint ? { prompt, hint } : { prompt }); } catch (e) { console.warn('Google:', e); }
+}
+async function gcalRicordaAccount() {
+  try {
+    const j = await gcalFetch('https://www.googleapis.com/calendar/v3/calendars/primary');
+    if (j?.id && j.id.includes('@')) localStorage.setItem('gcal_email', j.id);
+  } catch (_) {}
 }
 function gcalAggiornaBottone() {
   const b = document.getElementById('btn-gcal'); if (!b) return;
@@ -2201,7 +2215,7 @@ function gcalAggiornaBottone() {
 async function gcalFetch(url, opzioni = {}) {
   if (!gcalCollegato()) throw new Error('Google non collegato');
   const r = await fetch(url, { ...opzioni, headers: { Authorization: 'Bearer ' + GCAL_TOKEN, 'Content-Type': 'application/json', ...(opzioni.headers || {}) } });
-  if (r.status === 401) { GCAL_TOKEN = null; gcalAggiornaBottone(); throw new Error('Token Google scaduto: premi di nuovo "Collega Google Calendar"'); }
+  if (r.status === 401) { GCAL_TOKEN = null; gcalAggiornaBottone(); gcalRichiediToken(''); throw new Error('Token Google scaduto: rinnovo in corso, riprova tra un attimo'); }
   if (r.status === 204) return null;
   const j = await r.json().catch(() => ({}));
   if (!r.ok) throw new Error(j.error?.message || ('Google ' + r.status));
