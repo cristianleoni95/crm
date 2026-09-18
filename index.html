@@ -16,6 +16,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="config.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -359,6 +360,8 @@
   .ev-promemoria { background: rgba(255,200,100,0.2); color: #ffd48a; }
   .ev-altro { background: rgba(255,255,255,0.1); color: #b6bccb; }
   .ev-lead { background: rgba(255,120,190,0.18); color: #ffb3dc; }
+  .ev-google { background: rgba(120,150,255,0.14); color: #b8c6ff; border: 1px dashed rgba(120,150,255,0.5); }
+  .cal-gcal.collegato { color: #8fdc8f !important; border-color: rgba(109,191,109,0.4) !important; }
   .ev-fatto-si { opacity: 0.5; text-decoration: line-through; }
   .cal-griglia { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
   .cal-giorno-nome { font-size: 0.68rem; color: #9aa1b2; text-transform: uppercase; text-align: center; padding: 4px 0; }
@@ -560,10 +563,11 @@
     </div>
     <div class="cal-azioni">
       <button class="cal-vista" id="cal-vista-btn" onclick="calToggleVista()">📋 Agenda</button>
+      <button class="cal-gcal" id="btn-gcal" onclick="gcalCollega()" style="display:none">🔗 Collega Google Calendar</button>
       <button class="cal-nuovo" onclick="apriEvento()">+ Nuovo evento</button>
     </div>
   </div>
-  <div class="cal-legenda"><span class="ev-appuntamento">Appuntamento</span><span class="ev-riprese">Riprese</span><span class="ev-consegna">Consegna</span><span class="ev-promemoria">Promemoria</span><span class="ev-altro">Altro</span><span class="ev-lead">🤝 da risentire</span></div>
+  <div class="cal-legenda"><span class="ev-appuntamento">Appuntamento</span><span class="ev-riprese">Riprese</span><span class="ev-consegna">Consegna</span><span class="ev-promemoria">Promemoria</span><span class="ev-altro">Altro</span><span class="ev-lead">🤝 da risentire</span><span class="ev-google">Google Calendar</span></div>
   <div class="cal-griglia" id="cal-griglia"></div>
   <div class="cal-agenda" id="cal-agenda" style="display:none"></div>
 </div>
@@ -1847,6 +1851,7 @@ async function avviaApp() {
   await Promise.all([caricaLeads(), caricaEventiRecenti(), caricaCalendario()]);
   ascoltaCambiamenti();
   avviaTracciamentoAttivita();
+  setTimeout(gcalInit, 500);
   manutenzioneGiornaliera().catch(e => console.warn('manutenzione:', e));
 }
 
@@ -1888,7 +1893,8 @@ function eventiLeadPer(giornoISO) {
 }
 function eventiDelGiorno(giornoISO) {
   const reali = EVENTI_CAL.filter(e => e.inizio && new Date(e.inizio).toLocaleDateString('sv-SE') === giornoISO);
-  return [...reali, ...eventiLeadPer(giornoISO)].sort((a, b) => (a.tutto_il_giorno ? '0' : '1' + a.inizio).localeCompare(b.tutto_il_giorno ? '0' : '1' + b.inizio));
+  const google = (typeof EVENTI_GOOGLE !== 'undefined' ? EVENTI_GOOGLE : []).filter(e => new Date(e.inizio).toLocaleDateString('sv-SE') === giornoISO);
+  return [...reali, ...google, ...eventiLeadPer(giornoISO)].sort((a, b) => (a.tutto_il_giorno ? '0' : '1' + a.inizio).localeCompare(b.tutto_il_giorno ? '0' : '1' + b.inizio));
 }
 function oraEv(e) { return e.tutto_il_giorno ? 'tutto il giorno' : new Date(e.inizio).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }); }
 
@@ -1925,7 +1931,7 @@ function renderCalendario() {
     const visibili = evs.slice(0, 3);
     html += `<div class="cal-cella ${altroMese ? 'altro-mese' : ''} ${iso === oggi ? 'oggi' : ''}" onclick="apriEvento(null, null, '${iso}')">
       <div class="cal-num"><span>${d.getDate()}</span>${evs.length > 3 ? `<span class="cal-piu">+${evs.length - 3}</span>` : ''}</div>
-      ${visibili.map(e => `<div class="cal-ev ev-${e.tipo} ${e.fatto ? 'ev-fatto-si' : ''}" onclick="event.stopPropagation();${e.virtuale ? `apriModal('${e.lead_id}')` : `apriEvento('${e.id}')`}" title="${esc(e.titolo)}">${e.tutto_il_giorno ? '' : oraEv(e) + ' '}${esc(e.titolo)}</div>`).join('')}
+      ${visibili.map(e => `<div class="cal-ev ev-${e.tipo} ${e.fatto ? 'ev-fatto-si' : ''}" onclick="event.stopPropagation();${e.google ? `window.open('${e.link}','_blank')` : e.virtuale ? `apriModal('${e.lead_id}')` : `apriEvento('${e.id}')`}" title="${esc(e.titolo)}">${e.tutto_il_giorno ? '' : oraEv(e) + ' '}${esc(e.titolo)}</div>`).join('')}
       <div class="cal-pallini">${evs.slice(0, 6).map(e => `<span class="cal-pallino ev-${e.tipo}"></span>`).join('')}</div>
     </div>`;
   }
@@ -1944,9 +1950,9 @@ function renderAgenda() {
     html += `<div class="ag-giorno ${iso === oggi ? 'oggi' : ''}">${i === 0 ? 'Oggi · ' : i === 1 ? 'Domani · ' : ''}${d.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })}</div>`;
     html += evs.map(e => {
       const lead = e.lead_id ? LEADS.find(l => l.id === e.lead_id) : null;
-      return `<div class="ag-ev ${e.fatto ? 'ev-fatto-si' : ''}" onclick="${e.virtuale ? `apriModal('${e.lead_id}')` : `apriEvento('${e.id}')`}">
+      return `<div class="ag-ev ${e.fatto ? 'ev-fatto-si' : ''}" onclick="${e.google ? `window.open('${e.link}','_blank')` : e.virtuale ? `apriModal('${e.lead_id}')` : `apriEvento('${e.id}')`}">
         <div class="ag-ora">${oraEv(e)}</div>
-        <div><div class="ag-titolo">${esc(e.titolo)}<span class="ag-tipo ev-${e.tipo}">${e.virtuale ? 'lead' : (TIPI_EV[e.tipo] || e.tipo)}</span></div>
+        <div><div class="ag-titolo">${esc(e.titolo)}<span class="ag-tipo ev-${e.tipo}">${e.google ? 'Google' : e.virtuale ? 'lead' : (TIPI_EV[e.tipo] || e.tipo)}</span></div>
         <div class="ag-sotto">${[e.luogo, lead && !e.virtuale ? '🤝 ' + lead.nome_azienda : '', e.note].filter(Boolean).map(esc).join(' · ')}</div></div>
       </div>`;
     }).join('');
@@ -2031,6 +2037,7 @@ async function salvaEvento(ev) {
   }
   chiudiEvento();
   renderCalendario(); aggiornaStats();
+  gcalSincronizzaEvento(salvato).then(() => renderCalendario());
 }
 async function segnaEventoFatto() {
   const id = document.getElementById('ev-id').value; if (!id) return;
@@ -2041,7 +2048,9 @@ async function segnaEventoFatto() {
 async function eliminaEvento() {
   const id = document.getElementById('ev-id').value; if (!id) return;
   if (!confirm('Eliminare questo evento?')) return;
+  const gid = EVENTI_CAL.find(x => x.id === id)?.google_event_id;
   await sb.from('calendario').delete().eq('id', id);
+  gcalEliminaEvento(gid);
   EVENTI_CAL = EVENTI_CAL.filter(x => x.id !== id);
   chiudiEvento(); renderCalendario(); aggiornaStats();
 }
@@ -2116,6 +2125,123 @@ async function renderChartAttivita() {
     data: { labels: giorni.map(g => g.slice(8) + '/' + g.slice(5, 7)), datasets: [{ label: 'minuti', data: giorni.map(g => Math.round(perGiorno[g])), backgroundColor: '#9ecbff', borderRadius: 6, maxBarThickness: 26 }] },
     options: { plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => formatoDurata(c.raw * 60) } } }, scales: { x: { grid: { display: false } }, y: { grid: { color: 'rgba(255,255,255,0.08)' }, beginAtZero: true, title: { display: true, text: 'minuti' } } } }
   });
+}
+
+/* ============================================================
+   GOOGLE CALENDAR — collegamento diretto dal browser (Google Identity Services)
+   - "Collega Google" → consenso una volta; il token dura ~1 ora e si rinnova da solo
+   - ogni evento del CRM viene copiato/aggiornato/cancellato nel Google Calendar principale
+   - gli eventi di Google (prossimi 60 giorni) compaiono nel calendario del CRM in grigio-blu
+   ============================================================ */
+const GCAL_SCOPE = 'https://www.googleapis.com/auth/calendar.events';
+const GCAL_API = 'https://www.googleapis.com/calendar/v3/calendars/primary/events';
+let GCAL_TOKEN = null, GCAL_SCADE = 0, GCAL_CLIENT = null;
+let EVENTI_GOOGLE = [];
+
+function gcalConfigurato() { return !!(CFG.GOOGLE_CLIENT_ID && window.google?.accounts?.oauth2); }
+function gcalCollegato() { return !!GCAL_TOKEN && Date.now() < GCAL_SCADE - 60000; }
+
+function gcalInit() {
+  if (!gcalConfigurato()) return;
+  GCAL_CLIENT = google.accounts.oauth2.initTokenClient({
+    client_id: CFG.GOOGLE_CLIENT_ID, scope: GCAL_SCOPE,
+    callback: async (r) => {
+      if (r.error) { console.warn('Google:', r.error); gcalAggiornaBottone(); return; }
+      GCAL_TOKEN = r.access_token; GCAL_SCADE = Date.now() + (r.expires_in || 3600) * 1000;
+      try { sessionStorage.setItem('gcal_tok', JSON.stringify({ t: GCAL_TOKEN, s: GCAL_SCADE })); } catch (_) {}
+      try { localStorage.setItem('gcal_collegato', '1'); } catch (_) {}
+      gcalAggiornaBottone();
+      await gcalCaricaEventi();
+      await gcalSpingiMancanti();
+    },
+  });
+  try { const s = JSON.parse(sessionStorage.getItem('gcal_tok') || 'null'); if (s && Date.now() < s.s - 60000) { GCAL_TOKEN = s.t; GCAL_SCADE = s.s; } } catch (_) {}
+  gcalAggiornaBottone();
+  if (gcalCollegato()) gcalCaricaEventi();
+  else if (localStorage.getItem('gcal_collegato') === '1') { try { GCAL_CLIENT.requestAccessToken({ prompt: '' }); } catch (_) {} }   // rinnovo silenzioso
+}
+function gcalCollega() {
+  if (!gcalConfigurato()) { alert('Google Calendar non configurato (manca GOOGLE_CLIENT_ID in config.js).'); return; }
+  if (gcalCollegato()) {
+    if (confirm('Scollegare Google Calendar da questo dispositivo? Gli eventi già copiati restano su Google.')) {
+      GCAL_TOKEN = null; GCAL_SCADE = 0; EVENTI_GOOGLE = [];
+      try { sessionStorage.removeItem('gcal_tok'); localStorage.removeItem('gcal_collegato'); } catch (_) {}
+      gcalAggiornaBottone(); renderCalendario();
+    }
+    return;
+  }
+  GCAL_CLIENT.requestAccessToken({ prompt: localStorage.getItem('gcal_collegato') === '1' ? '' : 'consent' });
+}
+function gcalAggiornaBottone() {
+  const b = document.getElementById('btn-gcal'); if (!b) return;
+  b.style.display = gcalConfigurato() ? '' : 'none';
+  b.textContent = gcalCollegato() ? '🟢 Google Calendar collegato' : '🔗 Collega Google Calendar';
+  b.classList.toggle('collegato', gcalCollegato());
+}
+
+async function gcalFetch(url, opzioni = {}) {
+  if (!gcalCollegato()) throw new Error('Google non collegato');
+  const r = await fetch(url, { ...opzioni, headers: { Authorization: 'Bearer ' + GCAL_TOKEN, 'Content-Type': 'application/json', ...(opzioni.headers || {}) } });
+  if (r.status === 401) { GCAL_TOKEN = null; gcalAggiornaBottone(); throw new Error('Token Google scaduto: premi di nuovo "Collega Google Calendar"'); }
+  if (r.status === 204) return null;
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.error?.message || ('Google ' + r.status));
+  return j;
+}
+
+async function gcalCaricaEventi() {
+  if (!gcalCollegato()) return;
+  try {
+    const min = new Date(); min.setDate(min.getDate() - 7);
+    const max = new Date(); max.setDate(max.getDate() + 60);
+    const q = `?singleEvents=true&orderBy=startTime&maxResults=250&timeMin=${encodeURIComponent(min.toISOString())}&timeMax=${encodeURIComponent(max.toISOString())}`;
+    const j = await gcalFetch(GCAL_API + q);
+    const mieiGoogleId = new Set(EVENTI_CAL.map(e => e.google_event_id).filter(Boolean));
+    EVENTI_GOOGLE = (j.items || []).filter(i => !mieiGoogleId.has(i.id) && i.status !== 'cancelled').map(i => ({
+      virtuale: true, google: true, id: 'g_' + i.id, titolo: i.summary || '(senza titolo)', tipo: 'google',
+      inizio: i.start?.dateTime || (i.start?.date + 'T00:00:00'), fine: i.end?.dateTime || null,
+      tutto_il_giorno: !i.start?.dateTime, luogo: i.location || '', note: i.description || '', link: i.htmlLink,
+    }));
+    renderCalendario(); aggiornaStats();
+  } catch (e) { console.warn('Google Calendar:', e.message); }
+}
+
+function gcalCorpo(riga) {
+  const lead = riga.lead_id ? LEADS.find(l => l.id === riga.lead_id) : null;
+  const desc = [lead ? `Lead CRM: ${lead.nome_azienda} (${lead.citta || ''})${lead.telefono ? ' · ' + lead.telefono : ''}` : '', riga.note || '', '— creato dal CRM Videomaker'].filter(Boolean).join('\n');
+  const corpo = { summary: `${(TIPI_EV[riga.tipo] || '').split(' ')[0]} ${riga.titolo}`.trim(), description: desc, location: riga.luogo || '' };
+  if (riga.tutto_il_giorno) {
+    const d = new Date(riga.inizio).toLocaleDateString('sv-SE'); const f = new Date(new Date(riga.inizio).getTime() + 86400000).toLocaleDateString('sv-SE');
+    corpo.start = { date: d }; corpo.end = { date: f };
+  } else {
+    corpo.start = { dateTime: new Date(riga.inizio).toISOString() }; corpo.end = { dateTime: new Date(riga.fine || new Date(riga.inizio).getTime() + 3600000).toISOString() };
+  }
+  corpo.reminders = { useDefault: false, overrides: [{ method: 'popup', minutes: 60 }, { method: 'popup', minutes: 1440 }] };
+  return corpo;
+}
+
+// Copia (o aggiorna) un evento del CRM su Google e salva l'id Google nella riga
+async function gcalSincronizzaEvento(riga) {
+  if (!gcalCollegato() || !riga) return;
+  try {
+    let j;
+    if (riga.google_event_id) j = await gcalFetch(`${GCAL_API}/${encodeURIComponent(riga.google_event_id)}`, { method: 'PATCH', body: JSON.stringify(gcalCorpo(riga)) });
+    else j = await gcalFetch(GCAL_API, { method: 'POST', body: JSON.stringify(gcalCorpo(riga)) });
+    if (j?.id && j.id !== riga.google_event_id) {
+      riga.google_event_id = j.id;
+      await sb.from('calendario').update({ google_event_id: j.id }).eq('id', riga.id);
+    }
+  } catch (e) { console.warn('Google Calendar:', e.message); pillSync('err', '☁ Google: ' + e.message); }
+}
+async function gcalEliminaEvento(googleId) {
+  if (!gcalCollegato() || !googleId) return;
+  try { await gcalFetch(`${GCAL_API}/${encodeURIComponent(googleId)}`, { method: 'DELETE' }); } catch (e) { console.warn('Google Calendar:', e.message); }
+}
+// Al collegamento: gli eventi futuri del CRM non ancora su Google vengono copiati
+async function gcalSpingiMancanti() {
+  const mancanti = EVENTI_CAL.filter(e => !e.google_event_id && !e.fatto && new Date(e.inizio) > new Date(Date.now() - 86400000));
+  for (const e of mancanti) await gcalSincronizzaEvento(e);
+  if (mancanti.length) { renderCalendario(); await gcalCaricaEventi(); }
 }
 
 </script>
