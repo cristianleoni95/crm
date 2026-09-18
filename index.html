@@ -338,6 +338,77 @@
   .outreach-tab.richiamo { border-color: rgba(200,125,255,0.5); color: #dba8ff; }
   .az.disab { opacity: 0.45; cursor: not-allowed; }
 
+  /* ===== v3: calendario + attivita' ===== */
+  .btn-calendario { background: rgba(255,200,100,0.14); color: #ffd48a; border: 1px solid rgba(255,200,100,0.35); padding: 8px 14px; border-radius: var(--r-sm); font-size: 0.83rem; cursor: pointer; }
+  .btn-calendario.active { background: #ffd48a; color: #2a1a05; border-color: #ffd48a; }
+  .st-cal .stat-num { color: #ffd48a; } .st-att .stat-num { color: #9ecbff; }
+  .calendario-view { display: none; padding: 0 32px 20px; position: relative; z-index: 1; }
+  .calendario-view.active { display: block; }
+  .cal-testa { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
+  .cal-nav { display: flex; align-items: center; gap: 8px; }
+  .cal-nav h3 { font-size: 1.05rem; color: #fff; min-width: 190px; text-align: center; text-transform: capitalize; }
+  .cal-nav button, .cal-azioni button { background: var(--glass); border: 1px solid var(--glass-border); color: #dde0ea; padding: 7px 12px; border-radius: var(--r-sm); cursor: pointer; font-size: 0.85rem; }
+  .cal-nav button:hover, .cal-azioni button:hover { border-color: rgba(255,255,255,0.3); }
+  .cal-oggi { color: #ffd48a !important; }
+  .cal-nuovo { background: rgba(255,200,100,0.18) !important; color: #ffd48a !important; border-color: rgba(255,200,100,0.4) !important; font-weight: 700; }
+  .cal-legenda { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  .cal-legenda span { font-size: 0.68rem; padding: 3px 9px; border-radius: 999px; }
+  .ev-appuntamento { background: rgba(125,184,255,0.2); color: #9ecbff; }
+  .ev-riprese { background: rgba(255,107,107,0.2); color: #ff9a9a; }
+  .ev-consegna { background: rgba(109,191,109,0.2); color: #8fdc8f; }
+  .ev-promemoria { background: rgba(255,200,100,0.2); color: #ffd48a; }
+  .ev-altro { background: rgba(255,255,255,0.1); color: #b6bccb; }
+  .ev-lead { background: rgba(255,120,190,0.18); color: #ffb3dc; }
+  .ev-fatto-si { opacity: 0.5; text-decoration: line-through; }
+  .cal-griglia { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+  .cal-giorno-nome { font-size: 0.68rem; color: #9aa1b2; text-transform: uppercase; text-align: center; padding: 4px 0; }
+  .cal-cella { background: var(--glass); border: 1px solid var(--glass-border); border-radius: var(--r-sm); min-height: 96px; padding: 6px; cursor: pointer; transition: background .15s; }
+  .cal-cella:hover { background: var(--glass-hover); }
+  .cal-cella.altro-mese { opacity: 0.35; }
+  .cal-cella.oggi { border-color: #ffd48a; box-shadow: inset 0 0 0 1px rgba(255,212,138,0.5); }
+  .cal-num { font-size: 0.78rem; color: #dde0ea; font-weight: 700; margin-bottom: 4px; display: flex; justify-content: space-between; }
+  .cal-num .cal-piu { color: #767d8c; font-weight: 400; font-size: 0.7rem; }
+  .cal-ev { font-size: 0.66rem; padding: 2px 6px; border-radius: 6px; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+  .cal-ev:hover { filter: brightness(1.25); }
+  .cal-agenda { display: flex; flex-direction: column; gap: 8px; }
+  .ag-giorno { font-size: 0.72rem; color: #9aa1b2; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 10px; }
+  .ag-giorno.oggi { color: #ffd48a; }
+  .ag-ev { display: flex; gap: 12px; align-items: flex-start; background: var(--glass); border: 1px solid var(--glass-border); border-radius: var(--r-sm); padding: 10px 14px; cursor: pointer; }
+  .ag-ev:hover { background: var(--glass-hover); }
+  .ag-ora { min-width: 60px; font-size: 0.8rem; color: #dde0ea; font-weight: 700; }
+  .ag-titolo { font-size: 0.88rem; color: #fff; font-weight: 600; }
+  .ag-sotto { font-size: 0.74rem; color: #9aa1b2; margin-top: 2px; }
+  .ag-tipo { font-size: 0.64rem; padding: 2px 8px; border-radius: 999px; margin-left: 8px; vertical-align: middle; }
+  .modal-ev { max-width: 560px; }
+  .modal-ev h2 { font-size: 1.1rem; color: #fff; margin-bottom: 14px; }
+  .ev-campo { margin-bottom: 10px; }
+  .ev-campo label { display: block; font-size: 0.68rem; color: #767d8c; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .ev-campo input, .ev-campo select, .ev-campo textarea { width: 100%; background: var(--inset); border: 1px solid var(--inset-border); color: #eef0f6; padding: 9px 12px; border-radius: var(--r-sm); font-size: 0.9rem; font-family: inherit; outline: none; color-scheme: dark; }
+  .ev-campo input:focus, .ev-campo select:focus, .ev-campo textarea:focus { border-color: #ffd48a; }
+  .ev-riga { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .ev-check { font-size: 0.82rem; color: #b6bccb; display: flex; align-items: center; gap: 8px; margin: 2px 0 10px; }
+  .ev-lead-riga { display: flex; gap: 6px; }
+  .ev-lead-x { background: var(--inset); border: 1px solid var(--inset-border); color: #9aa1b2; border-radius: var(--r-sm); padding: 0 12px; cursor: pointer; }
+  .ev-lead-risultati { display: flex; flex-direction: column; gap: 3px; margin-top: 4px; }
+  .ev-lead-risultati button { text-align: left; background: rgba(255,255,255,0.06); border: 1px solid var(--inset-border); color: #dde0ea; padding: 6px 10px; border-radius: 8px; font-size: 0.8rem; cursor: pointer; }
+  .ev-lead-risultati button:hover { border-color: #ffd48a; }
+  .ev-bottoni { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+  .ev-salva { background: #ffd48a; color: #2a1a05; border: none; padding: 11px 22px; border-radius: var(--r-sm); font-weight: 700; cursor: pointer; font-size: 0.9rem; flex: 1; }
+  .ev-fatto { background: rgba(109,191,109,0.18); color: #8fdc8f; border: 1px solid rgba(109,191,109,0.4); padding: 11px 16px; border-radius: var(--r-sm); cursor: pointer; font-weight: 700; }
+  .ev-elimina { background: rgba(255,107,107,0.12); color: #ff8a8a; border: 1px solid rgba(255,107,107,0.35); padding: 11px 16px; border-radius: var(--r-sm); cursor: pointer; }
+  .btn-agenda-lead { background: rgba(255,200,100,0.16); color: #ffd48a; border: 1px solid rgba(255,200,100,0.35); padding: 7px 14px; border-radius: var(--r-sm); font-size: 0.76rem; cursor: pointer; margin-top: 10px; }
+  .storico li.calendario::before { background: #ffd48a; }
+  @media (max-width: 768px) {
+    .calendario-view { padding: 0 12px 16px; }
+    .cal-cella { min-height: 58px; padding: 4px; }
+    .cal-ev { display: none; }
+    .cal-cella .cal-pallini { display: flex; gap: 3px; flex-wrap: wrap; }
+    .cal-pallino { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+    .cal-nav h3 { min-width: 130px; font-size: 0.95rem; }
+    .ev-riga { grid-template-columns: 1fr; }
+  }
+  @media (min-width: 769px) { .cal-pallini { display: none; } }
+
   /* ===== TELEFONO / TABLET ===== */
   @media (max-width: 900px) {
     .stats-view, .ricerca-view.active { grid-template-columns: 1fr; }
@@ -409,6 +480,8 @@
     <div class="stat st-cliente" onclick="vaiAColonnaNome('cliente')"><div class="stat-num" id="st-cliente">0</div><div class="stat-label">Clienti</div></div>
     <div class="stat st-inviati"><div class="stat-num" id="st-inviati">0</div><div class="stat-label">Inviati oggi <span id="st-inviati-ieri"></span></div></div>
     <div class="stat st-wa" id="stat-wa"><div class="stat-num" id="st-wa">0<span class="stat-su">/90</span></div><div class="stat-label">💬 WhatsApp oggi</div></div>
+    <div class="stat st-cal" onclick="toggleCalendario(true)"><div class="stat-num" id="st-eventi-oggi">0</div><div class="stat-label">📅 Eventi oggi</div></div>
+    <div class="stat st-att" onclick="toggleStats(true)"><div class="stat-num" id="st-attivita">0m</div><div class="stat-label">⏱ Attività oggi</div></div>
   </div>
 </div>
 
@@ -433,6 +506,7 @@
   <button class="btn-ricerca" id="btn-ricerca-toggle" onclick="toggleRicerca()">🔍 Nuova Ricerca</button>
   <button class="btn-stats" id="btn-stats-toggle" onclick="toggleStats()">📊 Statistiche</button>
   <button class="btn-archivio" id="btn-archivio-toggle" onclick="toggleArchivio()">📦 Archivio <b id="cnt-archivio">0</b></button>
+  <button class="btn-calendario" id="btn-calendario-toggle" onclick="toggleCalendario()">📅 Calendario</button>
   <select id="filtro-archivio" onchange="filtra()" style="display:none"><option value="">Archivio: tutti</option><option value="nessuna_risposta">Nessuna risposta</option><option value="non_interessato">Non interessato</option><option value="contattati_prima_del_2026-09-18">Contattati prima del 18/09</option></select>
 </div>
 
@@ -475,6 +549,59 @@
   </div>
 </div>
 
+<!-- CALENDARIO -->
+<div class="calendario-view" id="calendario-view">
+  <div class="cal-testa">
+    <div class="cal-nav">
+      <button onclick="calMese(-1)" title="Mese precedente">‹</button>
+      <h3 id="cal-titolo">—</h3>
+      <button onclick="calMese(1)" title="Mese successivo">›</button>
+      <button class="cal-oggi" onclick="calOggi()">Oggi</button>
+    </div>
+    <div class="cal-azioni">
+      <button class="cal-vista" id="cal-vista-btn" onclick="calToggleVista()">📋 Agenda</button>
+      <button class="cal-nuovo" onclick="apriEvento()">+ Nuovo evento</button>
+    </div>
+  </div>
+  <div class="cal-legenda"><span class="ev-appuntamento">Appuntamento</span><span class="ev-riprese">Riprese</span><span class="ev-consegna">Consegna</span><span class="ev-promemoria">Promemoria</span><span class="ev-altro">Altro</span><span class="ev-lead">🤝 da risentire</span></div>
+  <div class="cal-griglia" id="cal-griglia"></div>
+  <div class="cal-agenda" id="cal-agenda" style="display:none"></div>
+</div>
+
+<!-- MODAL EVENTO -->
+<div class="modal-overlay" id="modal-evento">
+  <div class="modal modal-ev">
+    <button class="modal-close" onclick="chiudiEvento()">✕</button>
+    <h2 id="ev-titolo-form">Nuovo evento</h2>
+    <form onsubmit="salvaEvento(event)">
+      <input type="hidden" id="ev-id">
+      <input type="hidden" id="ev-lead-id">
+      <div class="ev-campo"><label>Titolo</label><input id="ev-titolo" required placeholder="Es. Incontro con Country Ranch School"></div>
+      <div class="ev-riga">
+        <div class="ev-campo"><label>Tipo</label>
+          <select id="ev-tipo"><option value="appuntamento">📌 Appuntamento</option><option value="riprese">🎥 Riprese</option><option value="consegna">📦 Consegna</option><option value="promemoria">🔔 Promemoria</option><option value="altro">▪ Altro</option></select></div>
+        <div class="ev-campo"><label>Data</label><input type="date" id="ev-data" required></div>
+      </div>
+      <div class="ev-riga">
+        <div class="ev-campo"><label>Ora inizio</label><input type="time" id="ev-ora" step="300"></div>
+        <div class="ev-campo"><label>Durata</label>
+          <select id="ev-durata"><option value="30">30 min</option><option value="60" selected>1 ora</option><option value="90">1 h 30</option><option value="120">2 ore</option><option value="180">3 ore</option><option value="240">4 ore</option><option value="480">tutto il giorno (8 h)</option></select></div>
+      </div>
+      <label class="ev-check"><input type="checkbox" id="ev-tutto"> Tutto il giorno (senza orario)</label>
+      <div class="ev-campo"><label>Luogo</label><input id="ev-luogo" placeholder="Indirizzo o 'videochiamata'"></div>
+      <div class="ev-campo"><label>Lead collegato</label>
+        <div class="ev-lead-riga"><input id="ev-lead-cerca" placeholder="Cerca un lead per nome…" oninput="evCercaLead(this.value)" autocomplete="off"><button type="button" class="ev-lead-x" onclick="evTogliLead()" title="Scollega">✕</button></div>
+        <div class="ev-lead-risultati" id="ev-lead-risultati"></div></div>
+      <div class="ev-campo"><label>Note</label><textarea id="ev-note" rows="3" placeholder="Cosa portare, cosa preparare, chi c'è…"></textarea></div>
+      <div class="ev-bottoni">
+        <button type="submit" class="ev-salva">Salva</button>
+        <button type="button" class="ev-fatto" id="ev-fatto-btn" onclick="segnaEventoFatto()" style="display:none">✓ Fatto</button>
+        <button type="button" class="ev-elimina" id="ev-elimina-btn" onclick="eliminaEvento()" style="display:none">Elimina</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <!-- STATISTICHE -->
 <div class="stats-view" id="stats-view">
   <div class="ricerca-col">
@@ -488,6 +615,10 @@
   <div class="ricerca-col">
     <h3>📂 Top categorie</h3>
     <canvas id="chart-categorie" height="240"></canvas>
+  </div>
+  <div class="ricerca-col">
+    <h3>⏱ Tempo di attività sul CRM (ultimi 14 giorni)</h3>
+    <canvas id="chart-attivita" height="220"></canvas>
   </div>
   <div class="ricerca-col">
     <h3>💬 Canali di contatto usati</h3>
@@ -789,6 +920,7 @@ function ascoltaCambiamenti() {
       aggiornaStats();
       if (LEAD_CORRENTE && LEAD_CORRENTE.id === e.lead_id) caricaStorico(LEAD_CORRENTE.id);
     })
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'calendario' }, () => caricaCalendario())
     .on('postgres_changes', { event: '*', schema: 'public', table: 'impostazioni' }, payload => {
       if (payload.new?.chiave) { applicaImpostazione(payload.new.chiave, payload.new.valore); if (payload.new.chiave === 'agente_pc') aggiornaStatoPC(); }
     })
@@ -1015,11 +1147,11 @@ function toggleTop50() {
 }
 
 function vistaSpecialeAperta() {
-  return document.getElementById('ricerca-view').classList.contains('active') || document.getElementById('stats-view').classList.contains('active');
+  return ['ricerca-view', 'stats-view', 'calendario-view'].some(id => document.getElementById(id).classList.contains('active'));
 }
 function nascondiViste() {
-  ['ricerca-view', 'stats-view', 'lista-view'].forEach(id => document.getElementById(id).classList.remove('active'));
-  ['btn-ricerca-toggle', 'btn-stats-toggle'].forEach(id => document.getElementById(id).classList.remove('active'));
+  ['ricerca-view', 'stats-view', 'lista-view', 'calendario-view'].forEach(id => document.getElementById(id).classList.remove('active'));
+  ['btn-ricerca-toggle', 'btn-stats-toggle', 'btn-calendario-toggle'].forEach(id => document.getElementById(id).classList.remove('active'));
   document.getElementById('kanban-view').classList.add('hidden');
   document.getElementById('kanban-tabs').style.display = 'none';
 }
@@ -1152,7 +1284,8 @@ async function apriModal(id) {
       <div style="font-size:0.7rem;color:#767d8c;margin-top:8px">Premendo WhatsApp / DM / Email il CRM segna da solo contatto, canale, data e storico.</div>
     </div>
 
-    <div class="info-label" style="margin-bottom:6px">🕘 Storico</div>
+    <button class="btn-agenda-lead" onclick="apriEvento(null, LEAD_CORRENTE)">📅 + Appuntamento / promemoria per questo lead</button>
+    <div class="info-label" style="margin:14px 0 6px">🕘 Storico</div>
     <ul class="storico" id="storico"><li>carico…</li></ul>
 
     <div class="info-item" style="margin-bottom:16px">
@@ -1199,7 +1332,9 @@ async function caricaStorico(id) {
   const ul = document.getElementById('storico'); if (!ul) return;
   const { data } = await sb.from('eventi').select('*').eq('lead_id', id).order('creato_il', { ascending: false });
   const l = LEAD_CORRENTE; if (!l || l.id !== id) return;
-  const righe = (data || []).map(e => {
+  const futuri = (typeof EVENTI_CAL !== 'undefined' ? EVENTI_CAL : []).filter(e => e.lead_id === id && !e.fatto && new Date(e.inizio) >= new Date(Date.now() - 3600000)).sort((a, b) => a.inizio.localeCompare(b.inizio))
+    .map(e => `<li class="calendario"><span class="quando">${dataOra(e.inizio)}</span>📅 <b>${esc(e.titolo)}</b> (${TIPI_EV[e.tipo] || e.tipo})${e.luogo ? ' · ' + esc(e.luogo) : ''} <a href="#" onclick="event.preventDefault();apriEvento('${e.id}')" style="color:#ffd48a">apri</a></li>`);
+  const righe = futuri.concat((data || []).map(e => {
     let t = '';
     if (e.tipo === 'invio') t = `Messaggio inviato via <b>${esc(e.canale)}</b>${e.messaggio ? ' (' + (ETICHETTE_BOZZE[e.messaggio] || e.messaggio) + ')' : ''}`;
     else if (e.tipo === 'esito') t = `Esito: <b>${NOMI_ESITO[e.esito] || e.esito}</b>${e.motivo ? ' — ' + esc(MOTIVI_NO[e.motivo] || e.motivo) : ''}`;
@@ -1208,7 +1343,7 @@ async function caricaStorico(id) {
     else t = esc(e.dettaglio || e.tipo);
     const chi = e.creato_da && e.creato_da !== 'sistema' ? ` <span class="quando">· ${esc(e.creato_da.split('@')[0])}</span>` : '';
     return `<li class="${e.tipo}"><span class="quando">${dataOra(e.creato_il)}</span>${t}${chi}</li>`;
-  });
+  }));
   if (l.archivio_motivo === 'contattati_prima_del_2026-09-18' || (l.stato_kanban !== 'da_contattare' && !l.primo_contatto_il))
     righe.push(`<li class="invio"><span class="quando">prima del 18/09/2026</span>Contattato${l.contattato_tramite ? ' via <b>' + esc(l.contattato_tramite) + '</b>' : ''} (senza data: storico precedente al CRM online)</li>`);
   righe.push(`<li><span class="quando">${esc(l.data_trovato)}</span>Trovato dall'agente (${esc(l.fonte || 'ricerca')})</li>`);
@@ -1447,6 +1582,8 @@ function aggiornaStats() {
   const max = REGOLE.whatsapp_max_giorno || 90, avv = REGOLE.whatsapp_avviso || 80;
   document.getElementById('st-wa').innerHTML = `${wa}<span class="stat-su">/${max}</span>`;
   document.getElementById('stat-wa').className = 'stat st-wa ' + (wa >= max ? 'stop' : wa >= avv ? 'avviso' : 'ok');
+  if (typeof contaEventiOggi === 'function') contaEventiOggi();
+  if (typeof mostraAttivita === 'function') mostraAttivita();
 }
 
 function esportaCSV() {
@@ -1463,11 +1600,11 @@ function esportaCSV() {
 const CANALE_COLORI = { WhatsApp: '#5fe58a', Instagram: '#dba8ff', Facebook: '#a3b3ff', LinkedIn: '#8fd0ff', Email: '#8fdc8f', Telefono: '#ffc966', 'Di persona': '#ff8a8a' };
 let GRAFICI = {};
 
-function toggleStats() {
+function toggleStats(forza) {
   const view = document.getElementById('stats-view');
-  const attiva = !view.classList.contains('active');
+  const attiva = forza === true ? true : !view.classList.contains('active');
   nascondiViste();
-  if (attiva) { view.classList.add('active'); document.getElementById('btn-stats-toggle').classList.add('active'); renderCharts(); }
+  if (attiva) { view.classList.add('active'); document.getElementById('btn-stats-toggle').classList.add('active'); renderCharts(); renderChartAttivita(); }
   else mostraKanbanOLista();
 }
 
@@ -1707,8 +1844,9 @@ async function avviaApp() {
   UTENTE = user?.email || '';
   document.getElementById('kanban-tabs').style.display = MOBILE ? 'flex' : 'none';
   await caricaImpostazioni();
-  await Promise.all([caricaLeads(), caricaEventiRecenti()]);
+  await Promise.all([caricaLeads(), caricaEventiRecenti(), caricaCalendario()]);
   ascoltaCambiamenti();
+  avviaTracciamentoAttivita();
   manutenzioneGiornaliera().catch(e => console.warn('manutenzione:', e));
 }
 
@@ -1723,6 +1861,262 @@ async function avviaApp() {
   if (daLink && session) { mostraNuovaPassword(true); return; }
   if (session) avviaApp(); else mostraLogin(true);
 })();
+
+/* ============================================================
+   CALENDARIO — appuntamenti, riprese, consegne, promemoria
+   Gli eventi vivono nella tabella `calendario`; le date "risentire" dei
+   lead (trattative e "più avanti") compaiono da sole come voci 🤝.
+   ============================================================ */
+let EVENTI_CAL = [];
+let CAL_MESE = new Date(); CAL_MESE.setDate(1);
+let CAL_AGENDA = false;
+let EVENTO_CORRENTE = null;
+const TIPI_EV = { appuntamento: '📌 Appuntamento', riprese: '🎥 Riprese', consegna: '📦 Consegna', promemoria: '🔔 Promemoria', altro: '▪ Altro' };
+
+async function caricaCalendario() {
+  const da = new Date(); da.setMonth(da.getMonth() - 3);
+  const { data, error } = await sb.from('calendario').select('*').gte('inizio', da.toISOString()).order('inizio');
+  if (!error) EVENTI_CAL = data || [];
+  if (document.getElementById('calendario-view').classList.contains('active')) renderCalendario();
+  aggiornaStats();
+}
+
+// Voci virtuali: lead con data "risentire" (trattativa / più avanti)
+function eventiLeadPer(giornoISO) {
+  return LEADS.filter(l => l.risentire_il === giornoISO && (colonnaDi(l) === 'trattativa' || colonnaDi(l) === 'risentire'))
+    .map(l => ({ virtuale: true, lead_id: l.id, titolo: (colonnaDi(l) === 'trattativa' ? '🤝 ' : '🕓 ') + 'Risentire ' + nomeBreve(l), tipo: 'lead', inizio: giornoISO + 'T09:00:00', tutto_il_giorno: true }));
+}
+function eventiDelGiorno(giornoISO) {
+  const reali = EVENTI_CAL.filter(e => e.inizio && new Date(e.inizio).toLocaleDateString('sv-SE') === giornoISO);
+  return [...reali, ...eventiLeadPer(giornoISO)].sort((a, b) => (a.tutto_il_giorno ? '0' : '1' + a.inizio).localeCompare(b.tutto_il_giorno ? '0' : '1' + b.inizio));
+}
+function oraEv(e) { return e.tutto_il_giorno ? 'tutto il giorno' : new Date(e.inizio).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }); }
+
+function toggleCalendario(forza) {
+  const view = document.getElementById('calendario-view');
+  const attiva = forza === true ? true : !view.classList.contains('active');
+  nascondiViste();
+  if (attiva) {
+    view.classList.add('active');
+    document.getElementById('btn-calendario-toggle').classList.add('active');
+    renderCalendario();
+  } else mostraKanbanOLista();
+}
+function calMese(delta) { CAL_MESE.setMonth(CAL_MESE.getMonth() + delta); renderCalendario(); }
+function calOggi() { CAL_MESE = new Date(); CAL_MESE.setDate(1); renderCalendario(); }
+function calToggleVista() { CAL_AGENDA = !CAL_AGENDA; renderCalendario(); }
+
+function renderCalendario() {
+  document.getElementById('cal-vista-btn').textContent = CAL_AGENDA ? '🗓 Mese' : '📋 Agenda';
+  document.getElementById('cal-griglia').style.display = CAL_AGENDA ? 'none' : 'grid';
+  document.getElementById('cal-agenda').style.display = CAL_AGENDA ? 'flex' : 'none';
+  if (CAL_AGENDA) { document.getElementById('cal-titolo').textContent = 'Prossimi 30 giorni'; return renderAgenda(); }
+  document.getElementById('cal-titolo').textContent = CAL_MESE.toLocaleDateString('it-IT', { month: 'long', year: 'numeric' });
+  const oggi = oggiLocale();
+  const primo = new Date(CAL_MESE); const offset = (primo.getDay() + 6) % 7;   // lunedì = 0
+  const inizio = new Date(primo); inizio.setDate(1 - offset);
+  let html = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'].map(g => `<div class="cal-giorno-nome">${g}</div>`).join('');
+  for (let i = 0; i < 42; i++) {
+    const d = new Date(inizio); d.setDate(inizio.getDate() + i);
+    const iso = d.toLocaleDateString('sv-SE');
+    const evs = eventiDelGiorno(iso);
+    const altroMese = d.getMonth() !== CAL_MESE.getMonth();
+    if (i >= 35 && altroMese) break;
+    const visibili = evs.slice(0, 3);
+    html += `<div class="cal-cella ${altroMese ? 'altro-mese' : ''} ${iso === oggi ? 'oggi' : ''}" onclick="apriEvento(null, null, '${iso}')">
+      <div class="cal-num"><span>${d.getDate()}</span>${evs.length > 3 ? `<span class="cal-piu">+${evs.length - 3}</span>` : ''}</div>
+      ${visibili.map(e => `<div class="cal-ev ev-${e.tipo} ${e.fatto ? 'ev-fatto-si' : ''}" onclick="event.stopPropagation();${e.virtuale ? `apriModal('${e.lead_id}')` : `apriEvento('${e.id}')`}" title="${esc(e.titolo)}">${e.tutto_il_giorno ? '' : oraEv(e) + ' '}${esc(e.titolo)}</div>`).join('')}
+      <div class="cal-pallini">${evs.slice(0, 6).map(e => `<span class="cal-pallino ev-${e.tipo}"></span>`).join('')}</div>
+    </div>`;
+  }
+  document.getElementById('cal-griglia').innerHTML = html;
+}
+
+function renderAgenda() {
+  const box = document.getElementById('cal-agenda');
+  const oggi = oggiLocale();
+  let html = '';
+  for (let i = 0; i < 30; i++) {
+    const d = new Date(); d.setDate(d.getDate() + i);
+    const iso = d.toLocaleDateString('sv-SE');
+    const evs = eventiDelGiorno(iso);
+    if (!evs.length) continue;
+    html += `<div class="ag-giorno ${iso === oggi ? 'oggi' : ''}">${i === 0 ? 'Oggi · ' : i === 1 ? 'Domani · ' : ''}${d.toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long' })}</div>`;
+    html += evs.map(e => {
+      const lead = e.lead_id ? LEADS.find(l => l.id === e.lead_id) : null;
+      return `<div class="ag-ev ${e.fatto ? 'ev-fatto-si' : ''}" onclick="${e.virtuale ? `apriModal('${e.lead_id}')` : `apriEvento('${e.id}')`}">
+        <div class="ag-ora">${oraEv(e)}</div>
+        <div><div class="ag-titolo">${esc(e.titolo)}<span class="ag-tipo ev-${e.tipo}">${e.virtuale ? 'lead' : (TIPI_EV[e.tipo] || e.tipo)}</span></div>
+        <div class="ag-sotto">${[e.luogo, lead && !e.virtuale ? '🤝 ' + lead.nome_azienda : '', e.note].filter(Boolean).map(esc).join(' · ')}</div></div>
+      </div>`;
+    }).join('');
+  }
+  box.innerHTML = html || '<div class="empty"><div class="empty-icon">📅</div>Nessun evento nei prossimi 30 giorni. Premi "+ Nuovo evento".</div>';
+}
+
+// ---- modulo evento
+function apriEvento(id, lead, giornoISO) {
+  EVENTO_CORRENTE = id ? EVENTI_CAL.find(e => e.id === id) : null;
+  const e = EVENTO_CORRENTE || {};
+  document.getElementById('ev-titolo-form').textContent = e.id ? 'Modifica evento' : 'Nuovo evento';
+  document.getElementById('ev-id').value = e.id || '';
+  document.getElementById('ev-titolo').value = e.titolo || (lead ? 'Incontro con ' + nomeBreve(lead) : '');
+  document.getElementById('ev-tipo').value = e.tipo || 'appuntamento';
+  const ini = e.inizio ? new Date(e.inizio) : null;
+  document.getElementById('ev-data').value = ini ? ini.toLocaleDateString('sv-SE') : (giornoISO || oggiLocale());
+  document.getElementById('ev-ora').value = ini && !e.tutto_il_giorno ? ini.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }) : '10:00';
+  const durata = e.inizio && e.fine ? Math.round((new Date(e.fine) - new Date(e.inizio)) / 60000) : 60;
+  const sel = document.getElementById('ev-durata'); sel.value = [...sel.options].some(o => o.value == durata) ? String(durata) : '60';
+  document.getElementById('ev-tutto').checked = !!e.tutto_il_giorno;
+  document.getElementById('ev-luogo').value = e.luogo || (lead ? (lead.indirizzo || lead.citta || '') : '');
+  document.getElementById('ev-note').value = e.note || '';
+  const leadId = e.lead_id || (lead ? lead.id : '');
+  document.getElementById('ev-lead-id').value = leadId;
+  const ll = leadId ? LEADS.find(x => x.id === leadId) : null;
+  document.getElementById('ev-lead-cerca').value = ll ? ll.nome_azienda : '';
+  document.getElementById('ev-lead-risultati').innerHTML = '';
+  document.getElementById('ev-fatto-btn').style.display = e.id && !e.fatto ? '' : 'none';
+  document.getElementById('ev-elimina-btn').style.display = e.id ? '' : 'none';
+  document.getElementById('modal-evento').classList.add('active');
+  setTimeout(() => document.getElementById('ev-titolo').focus(), 50);
+}
+function chiudiEvento() { document.getElementById('modal-evento').classList.remove('active'); EVENTO_CORRENTE = null; }
+document.getElementById('modal-evento').addEventListener('click', e => { if (e.target === document.getElementById('modal-evento')) chiudiEvento(); });
+
+function evCercaLead(q) {
+  q = q.trim().toLowerCase();
+  const box = document.getElementById('ev-lead-risultati');
+  if (q.length < 2) { box.innerHTML = ''; return; }
+  const hit = LEADS.filter(l => (l.nome_azienda || '').toLowerCase().includes(q) || (l.citta || '').toLowerCase().includes(q)).slice(0, 6);
+  box.innerHTML = hit.map(l => `<button type="button" onclick="evScegliLead('${l.id}')">${esc(l.nome_azienda)} <span style="color:#767d8c">· ${esc(l.citta)}</span></button>`).join('');
+}
+function evScegliLead(id) {
+  const l = LEADS.find(x => x.id === id); if (!l) return;
+  document.getElementById('ev-lead-id').value = id;
+  document.getElementById('ev-lead-cerca').value = l.nome_azienda;
+  document.getElementById('ev-lead-risultati').innerHTML = '';
+  if (!document.getElementById('ev-titolo').value) document.getElementById('ev-titolo').value = 'Incontro con ' + nomeBreve(l);
+  if (!document.getElementById('ev-luogo').value) document.getElementById('ev-luogo').value = l.indirizzo || l.citta || '';
+}
+function evTogliLead() { document.getElementById('ev-lead-id').value = ''; document.getElementById('ev-lead-cerca').value = ''; document.getElementById('ev-lead-risultati').innerHTML = ''; }
+
+async function salvaEvento(ev) {
+  ev.preventDefault();
+  const tutto = document.getElementById('ev-tutto').checked;
+  const data = document.getElementById('ev-data').value;
+  const ora = tutto ? '00:00' : (document.getElementById('ev-ora').value || '09:00');
+  const inizio = new Date(`${data}T${ora}:00`);
+  const durata = tutto ? 24 * 60 : parseInt(document.getElementById('ev-durata').value, 10) || 60;
+  const fine = new Date(inizio.getTime() + durata * 60000);
+  const riga = {
+    titolo: document.getElementById('ev-titolo').value.trim(),
+    tipo: document.getElementById('ev-tipo').value,
+    inizio: inizio.toISOString(), fine: fine.toISOString(), tutto_il_giorno: tutto,
+    luogo: document.getElementById('ev-luogo').value.trim(),
+    note: document.getElementById('ev-note').value.trim(),
+    lead_id: document.getElementById('ev-lead-id').value || null,
+  };
+  const id = document.getElementById('ev-id').value;
+  let res;
+  if (id) res = await sb.from('calendario').update(riga).eq('id', id).select().single();
+  else res = await sb.from('calendario').insert({ ...riga, creato_da: UTENTE }).select().single();
+  if (res.error) { alert('Non salvato: ' + res.error.message); return; }
+  const salvato = res.data;
+  const idx = EVENTI_CAL.findIndex(e => e.id === salvato.id);
+  if (idx === -1) EVENTI_CAL.push(salvato); else EVENTI_CAL[idx] = salvato;
+  EVENTI_CAL.sort((a, b) => a.inizio.localeCompare(b.inizio));
+  if (riga.lead_id && !id) {
+    await sb.from('eventi').insert({ lead_id: riga.lead_id, tipo: 'nota', dettaglio: `📅 ${TIPI_EV[riga.tipo] || riga.tipo}: ${riga.titolo} — ${inizio.toLocaleDateString('it-IT')}${tutto ? '' : ' ' + ora}`, creato_da: UTENTE });
+    if (LEAD_CORRENTE && LEAD_CORRENTE.id === riga.lead_id) caricaStorico(riga.lead_id);
+  }
+  chiudiEvento();
+  renderCalendario(); aggiornaStats();
+}
+async function segnaEventoFatto() {
+  const id = document.getElementById('ev-id').value; if (!id) return;
+  await sb.from('calendario').update({ fatto: true }).eq('id', id);
+  const e = EVENTI_CAL.find(x => x.id === id); if (e) e.fatto = true;
+  chiudiEvento(); renderCalendario(); aggiornaStats();
+}
+async function eliminaEvento() {
+  const id = document.getElementById('ev-id').value; if (!id) return;
+  if (!confirm('Eliminare questo evento?')) return;
+  await sb.from('calendario').delete().eq('id', id);
+  EVENTI_CAL = EVENTI_CAL.filter(x => x.id !== id);
+  chiudiEvento(); renderCalendario(); aggiornaStats();
+}
+
+function contaEventiOggi() {
+  const evs = eventiDelGiorno(oggiLocale());
+  const el = document.getElementById('st-eventi-oggi'); if (!el) return;
+  const daFare = evs.filter(e => !e.fatto).length;
+  el.textContent = daFare;
+  const prox = evs.find(e => !e.fatto && !e.tutto_il_giorno && new Date(e.inizio) > new Date());
+  el.title = prox ? `Prossimo: ${oraEv(prox)} ${prox.titolo}` : '';
+}
+
+/* ============================================================
+   TEMPO DI ATTIVITA' — quanto viene usato il CRM
+   Una riga in `sessioni_uso` per ogni sessione aperta; ogni minuto,
+   se la pagina e' visibile, aggiorno `ultimo_battito`. Dopo 5 minuti
+   nascosta la sessione si chiude e alla prossima apertura ne inizia una nuova.
+   ============================================================ */
+let SESSIONE_USO = null;      // { id, inizio, ultimo }
+let ATTIVITA_OGGI_SEC = 0;    // secondi delle sessioni chiuse di oggi (escluse la corrente)
+let NASCOSTA_DAL = null;
+
+function dispositivoNome() { return /iPhone|Android.*Mobile/i.test(navigator.userAgent) ? 'telefono' : (/iPad|Android/i.test(navigator.userAgent) ? 'tablet' : 'pc'); }
+
+async function caricaAttivitaOggi() {
+  const { data } = await sb.from('sessioni_uso').select('id,inizio,ultimo_battito').eq('giorno', oggiLocale());
+  ATTIVITA_OGGI_SEC = (data || []).filter(s => !SESSIONE_USO || s.id !== SESSIONE_USO.id)
+    .reduce((t, s) => t + Math.max(0, (new Date(s.ultimo_battito) - new Date(s.inizio)) / 1000), 0);
+  mostraAttivita();
+}
+function secondiSessioneCorrente() { return SESSIONE_USO ? Math.max(0, (Date.now() - SESSIONE_USO.inizio) / 1000) : 0; }
+function formatoDurata(sec) { const m = Math.round(sec / 60); return m < 60 ? `${m}m` : `${Math.floor(m / 60)}h ${String(m % 60).padStart(2, '0')}m`; }
+function mostraAttivita() { const el = document.getElementById('st-attivita'); if (el) el.textContent = formatoDurata(ATTIVITA_OGGI_SEC + secondiSessioneCorrente()); }
+
+async function apriSessioneUso() {
+  const ora = new Date().toISOString();
+  const { data } = await sb.from('sessioni_uso').insert({ utente: UTENTE, dispositivo: dispositivoNome(), inizio: ora, ultimo_battito: ora, giorno: oggiLocale() }).select().single();
+  SESSIONE_USO = data ? { id: data.id, inizio: Date.now() } : null;
+  mostraAttivita();
+}
+async function battito() {
+  if (!SESSIONE_USO || document.visibilityState !== 'visible') return;
+  await sb.from('sessioni_uso').update({ ultimo_battito: new Date().toISOString() }).eq('id', SESSIONE_USO.id);
+  mostraAttivita();
+}
+function avviaTracciamentoAttivita() {
+  apriSessioneUso().then(caricaAttivitaOggi);
+  setInterval(battito, 60 * 1000);
+  setInterval(mostraAttivita, 15 * 1000);
+  document.addEventListener('visibilitychange', async () => {
+    if (document.visibilityState === 'hidden') { NASCOSTA_DAL = Date.now(); if (SESSIONE_USO) sb.from('sessioni_uso').update({ ultimo_battito: new Date().toISOString() }).eq('id', SESSIONE_USO.id).then(() => {}); }
+    else if (NASCOSTA_DAL && Date.now() - NASCOSTA_DAL > 5 * 60 * 1000) {   // pausa lunga: nuova sessione
+      ATTIVITA_OGGI_SEC += Math.max(0, (NASCOSTA_DAL - SESSIONE_USO.inizio) / 1000);
+      SESSIONE_USO = null; NASCOSTA_DAL = null;
+      await apriSessioneUso(); caricaAttivitaOggi();
+    } else { NASCOSTA_DAL = null; battito(); }
+  });
+}
+
+// Grafico: minuti per giorno, ultimi 14 giorni
+async function renderChartAttivita() {
+  const da = new Date(); da.setDate(da.getDate() - 13);
+  const { data } = await sb.from('sessioni_uso').select('giorno,inizio,ultimo_battito,dispositivo').gte('giorno', da.toLocaleDateString('sv-SE'));
+  const perGiorno = {};
+  for (let i = 0; i < 14; i++) { const d = new Date(da); d.setDate(da.getDate() + i); perGiorno[d.toLocaleDateString('sv-SE')] = 0; }
+  (data || []).forEach(s => { perGiorno[s.giorno] = (perGiorno[s.giorno] || 0) + Math.max(0, (new Date(s.ultimo_battito) - new Date(s.inizio)) / 60000); });
+  const giorni = Object.keys(perGiorno).sort();
+  if (GRAFICI.attivita) GRAFICI.attivita.destroy();
+  GRAFICI.attivita = new Chart(document.getElementById('chart-attivita'), {
+    type: 'bar',
+    data: { labels: giorni.map(g => g.slice(8) + '/' + g.slice(5, 7)), datasets: [{ label: 'minuti', data: giorni.map(g => Math.round(perGiorno[g])), backgroundColor: '#9ecbff', borderRadius: 6, maxBarThickness: 26 }] },
+    options: { plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => formatoDurata(c.raw * 60) } } }, scales: { x: { grid: { display: false } }, y: { grid: { color: 'rgba(255,255,255,0.08)' }, beginAtZero: true, title: { display: true, text: 'minuti' } } } }
+  });
+}
 
 </script>
 </body>
