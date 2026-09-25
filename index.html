@@ -421,6 +421,11 @@
   .gz:hover { filter: brightness(1.2); }
   #giorno-lista { display: flex; }
 
+  .btn-nuovo-lead { background: rgba(109,191,109,0.16); color: #8fdc8f; border: 1px solid rgba(109,191,109,0.4); padding: 8px 14px; border-radius: var(--r-sm); font-size: 0.83rem; cursor: pointer; font-weight: 700; }
+  .btn-nuovo-lead:hover { background: rgba(109,191,109,0.3); }
+  .nl-sotto { font-size: 0.8rem; color: #9aa1b2; margin-bottom: 14px; line-height: 1.45; }
+  #modal-nuovo-lead .ev-salva { background: #8fdc8f; color: #08240f; }
+
   /* ===== TELEFONO / TABLET ===== */
   @media (max-width: 900px) {
     .stats-view, .ricerca-view.active { grid-template-columns: 1fr; }
@@ -519,6 +524,7 @@
   <button class="btn-stats" id="btn-stats-toggle" onclick="toggleStats()">📊 Statistiche</button>
   <button class="btn-archivio" id="btn-archivio-toggle" onclick="toggleArchivio()">📦 Archivio <b id="cnt-archivio">0</b></button>
   <button class="btn-calendario" id="btn-calendario-toggle" onclick="toggleCalendario()">📅 Calendario</button>
+  <button class="btn-nuovo-lead" onclick="apriNuovoLead()">＋ Nuovo lead</button>
   <select id="filtro-archivio" onchange="filtra()" style="display:none"><option value="">Archivio: tutti</option><option value="nessuna_risposta">Nessuna risposta</option><option value="non_interessato">Non interessato</option><option value="contattati_prima_del_2026-09-18">Contattati prima del 18/09</option></select>
 </div>
 
@@ -579,6 +585,29 @@
   <div class="cal-legenda"><span class="ev-appuntamento">Appuntamento</span><span class="ev-riprese">Riprese</span><span class="ev-consegna">Consegna</span><span class="ev-promemoria">Promemoria</span><span class="ev-altro">Altro</span><span class="ev-lead">🤝 da risentire</span><span class="ev-google">Google Calendar</span></div>
   <div class="cal-griglia" id="cal-griglia"></div>
   <div class="cal-agenda" id="cal-agenda" style="display:none"></div>
+</div>
+
+<!-- MODAL NUOVO LEAD -->
+<div class="modal-overlay" id="modal-nuovo-lead">
+  <div class="modal modal-ev">
+    <button class="modal-close" onclick="chiudiNuovoLead()">✕</button>
+    <h2>＋ Nuovo lead a mano</h2>
+    <p class="nl-sotto">Per chi ti scrive, per un biglietto da visita, per un'azienda vista per strada. Bastano nome e città: punteggio e messaggi li mette il CRM.</p>
+    <form onsubmit="salvaNuovoLead(event)">
+      <div class="ev-campo"><label>Nome azienda *</label><input id="nl-nome" required placeholder="Es. Studio Dentistico Rossi"></div>
+      <div class="ev-riga">
+        <div class="ev-campo"><label>Categoria</label><input id="nl-categoria" list="nl-cat-lista" placeholder="Es. Dentisti"><datalist id="nl-cat-lista"></datalist></div>
+        <div class="ev-campo"><label>Città</label><input id="nl-citta" list="nl-citta-lista" placeholder="Es. Cremona"><datalist id="nl-citta-lista"></datalist></div>
+      </div>
+      <div class="ev-riga">
+<div class="ev-campo"><label>Telefono</label><input id="nl-telefono" placeholder="333 123 4567"></div><div class="ev-campo"><label>Email</label><input id="nl-email" type="email" placeholder="info@azienda.it"></div>      </div>
+      <div class="ev-riga">
+<div class="ev-campo"><label>Instagram</label><input id="nl-instagram" placeholder="@nomeprofilo"></div><div class="ev-campo"><label>Facebook</label><input id="nl-facebook" placeholder="nome pagina o link"></div>      </div>
+<div class="ev-campo"><label>Sito web</label><input id="nl-sito" placeholder="www.azienda.it"></div><div class="ev-campo"><label>Indirizzo</label><input id="nl-indirizzo" placeholder="Via Roma 12, Cremona"></div>      <div class="ev-campo"><label>Note</label><textarea id="nl-note" rows="2" placeholder="Come l'hai conosciuto, cosa ti ha detto..."></textarea></div>
+      <div class="ev-bottoni"><button type="submit" class="ev-salva" id="nl-salva">Aggiungi al CRM</button></div>
+      <div class="login-errore" id="nl-errore"></div>
+    </form>
+  </div>
 </div>
 
 <!-- MODAL GIORNO -->
@@ -730,6 +759,8 @@ let BOZZA_CORRENTE = 'generico';
 let UTENTE = '';
 let EVENTI_RECENTI = [];          // eventi da ieri in qua (per contatori)
 let REGOLE = { richiami_al_giorno: 30, giorni_prima_del_richiamo: 7, giorni_attesa_prima_di_archiviare: 10, giorni_risentire: 90, whatsapp_max_giorno: 90, whatsapp_avviso: 80, score_minimo_richiamo: 60 };
+let MSG_OUTREACH = null;          // i tre messaggi fissi, pubblicati dal PC
+let REGOLE_PUNTEGGIO = null;      // categorie che valgono di piu'/di meno per lo score
 let MSG_RICHIAMO = 'Ciao {nome}! Ti avevo scritto qualche giorno fa e immagino che il messaggio si sia perso tra i tanti. Sono Cristian, videomaker: mi farebbe piacere capire in 5 minuti se posso esservi utile con un video per la vostra attività. Se non è il momento, nessun problema: basta un "no grazie" e non vi disturbo più. A presto!';
 
 const COLONNE = ['da_contattare', 'in_attesa', 'da_richiamare', 'chiede_info', 'trattativa', 'risentire', 'cliente'];
@@ -891,7 +922,7 @@ async function caricaDettaglio(l) {
 }
 
 async function caricaImpostazioni() {
-  const { data } = await sb.from('impostazioni').select('chiave,valore').in('chiave', ['agente_pc', 'categorie', 'regole', 'messaggio_richiamo']);
+  const { data } = await sb.from('impostazioni').select('chiave,valore').in('chiave', ['agente_pc', 'categorie', 'regole', 'messaggio_richiamo', 'messaggi_outreach', 'regole_punteggio']);
   (data || []).forEach(r => applicaImpostazione(r.chiave, r.valore));
   aggiornaStatoPC();
 }
@@ -900,6 +931,8 @@ function applicaImpostazione(chiave, valore) {
   if (chiave === 'categorie') CATEGORIE_CLOUD = valore;
   if (chiave === 'regole' && valore) REGOLE = Object.assign({}, REGOLE, valore);
   if (chiave === 'messaggio_richiamo' && typeof valore === 'string') MSG_RICHIAMO = valore;
+  if (chiave === 'messaggi_outreach' && valore) MSG_OUTREACH = valore;
+  if (chiave === 'regole_punteggio' && valore) REGOLE_PUNTEGGIO = valore;
 }
 
 // Eventi da ieri (per "inviati oggi/ieri" e contatore WhatsApp)
@@ -2307,6 +2340,116 @@ function nuovoEventoNelGiorno(tipo) {
   if (tipo) document.getElementById('ev-tipo').value = tipo;
 }
 document.getElementById('modal-giorno').addEventListener('click', e => { if (e.target === document.getElementById('modal-giorno')) chiudiGiorno(); });
+
+
+/* ============================================================
+   NUOVO LEAD A MANO
+   Per chi ti scrive, per un biglietto da visita, per un'azienda vista per strada.
+   Il lead nasce completo: punteggio, canale consigliato e i tre messaggi, esattamente
+   come se l'avesse trovato l'agente. Il PC lo scarica in leads.json alla prima
+   sincronizzazione e lo segna fra i "gia' visti" (niente doppioni nelle ricerche).
+   ============================================================ */
+function apriNuovoLead() {
+  ['nl-nome','nl-categoria','nl-citta','nl-telefono','nl-email','nl-sito','nl-instagram','nl-facebook','nl-indirizzo','nl-note'].forEach(id => { const e = document.getElementById(id); if (e) e.value = ''; });
+  document.getElementById('nl-errore').textContent = '';
+  // elenco categorie gia' usate, per scriverle uguali (il campo resta libero)
+  const cats = [...new Set(LEADS.map(l => l.categoria).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+  document.getElementById('nl-cat-lista').innerHTML = cats.map(c => `<option value="${esc(c)}">`).join('');
+  const citta = [...new Set(LEADS.map(l => l.citta).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+  document.getElementById('nl-citta-lista').innerHTML = citta.map(c => `<option value="${esc(c)}">`).join('');
+  document.getElementById('modal-nuovo-lead').classList.add('active');
+  setTimeout(() => document.getElementById('nl-nome').focus(), 50);
+}
+function chiudiNuovoLead() { document.getElementById('modal-nuovo-lead').classList.remove('active'); }
+document.getElementById('modal-nuovo-lead').addEventListener('click', e => { if (e.target === document.getElementById('modal-nuovo-lead')) chiudiNuovoLead(); });
+
+// Stesso calcolo dell'agente sul PC (le liste di categorie arrivano da li')
+function calcolaScore(l) {
+  const imm = new Set((REGOLE_PUNTEGGIO?.immagine) || []);
+  const bassa = new Set((REGOLE_PUNTEGGIO?.bassa) || []);
+  let s = 0;
+  if (!l.hanno_video) s += 25;
+  if (imm.has(l.categoria)) s += 25; else if (bassa.has(l.categoria)) s -= 10;
+  if (l.instagram || l.facebook || l.tiktok) s += 20;
+  if (l.email) s += 15;
+  if (l.sito_web) s += 15;
+  return Math.max(0, Math.min(100, s));
+}
+function calcolaPriorita(score) { return score >= 80 ? 'ASSOLUTA' : score >= 60 ? 'ALTA' : score >= 40 ? 'NORMALE' : 'BASSA'; }
+function calcolaCanale(l) {
+  if (l.instagram) return 'Instagram DM';
+  if (l.email) return 'Email';
+  if (l.facebook) return 'Facebook Message';
+  if (l.telefono) return 'Telefono';
+  return 'Google My Business';
+}
+// Normalizza quello che si incolla: "@nome", "instagram.com/nome", link con ?igsh=...
+function ripulisciSocial(v, dominio) {
+  v = (v || '').trim();
+  if (!v) return '';
+  if (/^https?:\/\//i.test(v)) return v.split('?')[0];
+  const utente = v.replace(/^@/, '').replace(/\/+$/, '');
+  return utente ? `https://${dominio}/${utente}` : '';
+}
+
+async function salvaNuovoLead(ev) {
+  ev.preventDefault();
+  const err = document.getElementById('nl-errore');
+  const nome = document.getElementById('nl-nome').value.trim();
+  const citta = document.getElementById('nl-citta').value.trim();
+  if (!nome) { err.textContent = 'Serve almeno il nome.'; return; }
+
+  const tel = document.getElementById('nl-telefono').value.trim();
+  // Avviso doppioni: stesso nome o stesso numero gia' in archivio
+  const cifre = numeroCifre(tel);
+  const simile = LEADS.find(l => (l.nome_azienda || '').toLowerCase() === nome.toLowerCase())
+             || (cifre.length >= 6 ? LEADS.find(l => numeroCifre(l.telefono) === cifre) : null);
+  if (simile && !confirm(`Attenzione: "${simile.nome_azienda}" (${simile.citta || '—'}) è già nel CRM${simile.n_contatti ? ' ed è già stato contattato' : ''}.\n\nAggiungerlo lo stesso?`)) return;
+
+  const l = {
+    id: (crypto.randomUUID ? crypto.randomUUID() : 'man-' + Date.now()),
+    nome_azienda: nome,
+    categoria: document.getElementById('nl-categoria').value.trim(),
+    citta: citta,
+    indirizzo: document.getElementById('nl-indirizzo').value.trim(),
+    telefono: tel,
+    email: document.getElementById('nl-email').value.trim(),
+    sito_web: document.getElementById('nl-sito').value.trim(),
+    instagram: ripulisciSocial(document.getElementById('nl-instagram').value, 'instagram.com'),
+    facebook: ripulisciSocial(document.getElementById('nl-facebook').value, 'facebook.com'),
+    tiktok: '', linkedin: '', youtube: '',
+    follower_instagram: 0, hanno_video: false, ultima_data_post: '',
+    note_ricerca: document.getElementById('nl-note').value.trim(),
+    fonte: 'Inserito a mano',
+    stato_kanban: 'da_contattare',
+    data_trovato: oggiLocale(),
+    sessione_id: 'manuale',
+    n_contatti: 0,
+    archiviato: false,
+    aggiornato_da: 'dashboard',
+  };
+  l.lead_score = calcolaScore(l);
+  l.priorita = calcolaPriorita(l.lead_score);
+  l.canale_consigliato = calcolaCanale(l);
+  const m = MSG_OUTREACH;
+  if (m) {
+    l.bozze_outreach = { generico: m.generico, social: m.social, email_oggetto: m.email_oggetto, email: m.email };
+    l.bozza_outreach = m.generico;
+  }
+
+  const btn = document.getElementById('nl-salva'); btn.disabled = true;
+  const { data, error } = await sb.from('leads').insert(l).select().single();
+  btn.disabled = false;
+  if (error) { err.textContent = 'Non salvato: ' + error.message; return; }
+
+  await sb.from('eventi').insert({ lead_id: l.id, tipo: 'nota', dettaglio: 'Lead inserito a mano dalla dashboard', creato_da: UTENTE });
+  LEADS.push(Object.assign({}, data, { _dettaglio: true }));
+  LEADS.sort((a, b) => (b.lead_score || 0) - (a.lead_score || 0));
+  chiudiNuovoLead();
+  popolaFiltri(); filtra();
+  // apre subito la scheda: di solito si inserisce un lead per scrivergli adesso
+  apriModal(l.id);
+}
 
 </script>
 </body>
