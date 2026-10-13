@@ -31,6 +31,7 @@
     </queries>
 
     <application
+        android:name=".App"
         android:label="GlassOS"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher"

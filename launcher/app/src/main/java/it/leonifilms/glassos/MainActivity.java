@@ -13,7 +13,16 @@ import android.net.Uri;
 import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
+import android.webkit.RenderProcessGoneDetail;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.ScrollView;
+import android.widget.TextView;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.view.Window;
 import android.view.WindowInsets;
 import android.view.WindowInsetsController;
@@ -30,6 +39,9 @@ import android.webkit.WebViewClient;
 import androidx.webkit.WebViewAssetLoader;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
 /**
  * Launcher (schermata Home) di GlassOS: una WebView a tutto schermo che mostra
@@ -48,6 +60,7 @@ public class MainActivity extends Activity {
     private GeolocationPermissions.Callback geoCallback;
     private String geoOrigin;
     private ValueCallback<Uri[]> fileCallback;
+    private int rendererCrashes = 0;
 
     private final BroadcastReceiver packagesReceiver = new BroadcastReceiver() {
         @Override public void onReceive(Context c, Intent i) {
@@ -65,13 +78,32 @@ public class MainActivity extends Activity {
         }
     };
 
-    @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setupWindow();
-
         bridge = new Bridge(this);
+
+        // se l'ultima volta l'app si e' chiusa per un errore, mostralo invece di riprovare alla cieca
+        File crash = App.crashFile(this);
+        if (crash.exists()) { showCrash(crash); return; }
+
+        try { setupWindow(); } catch (Throwable ignored) { }
+        createWeb(false);
+
+        IntentFilter pf = new IntentFilter();
+        pf.addAction(Intent.ACTION_PACKAGE_ADDED);
+        pf.addAction(Intent.ACTION_PACKAGE_REMOVED);
+        pf.addAction(Intent.ACTION_PACKAGE_CHANGED);
+        pf.addAction(Intent.ACTION_PACKAGE_REPLACED);
+        pf.addDataScheme("package");
+        listen(packagesReceiver, pf);
+        listen(batteryReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+    }
+
+    /** Crea la WebView; safe = grafica alleggerita (senza rifrazione) dopo un crash del motore grafico. */
+    @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
+    private void createWeb(boolean safe) {
+        pageReady = false;
         web = new WebView(this);
         web.setBackgroundColor(Color.BLACK);
         web.setOverScrollMode(View.OVER_SCROLL_NEVER);
@@ -120,6 +152,10 @@ public class MainActivity extends Activity {
                 pageReady = true;
                 pushInsets();
             }
+            @Override public boolean onRenderProcessGone(WebView v, RenderProcessGoneDetail detail) {
+                runOnUiThread(MainActivity.this::onRendererGone);
+                return true;
+            }
         });
         web.setWebChromeClient(new WebChromeClient() {
             @Override public void onGeolocationPermissionsShowPrompt(String origin, GeolocationPermissions.Callback cb) {
@@ -146,21 +182,85 @@ public class MainActivity extends Activity {
         web.addJavascriptInterface(bridge, "GlassNative");
         setContentView(web);
         web.setOnApplyWindowInsetsListener((v, insets) -> { pushInsets(); return insets; });
-        web.loadUrl(ORIGIN + "/index.html");
+        web.loadUrl(ORIGIN + "/index.html" + (safe ? "?safe=1" : ""));
+    }
 
-        IntentFilter pf = new IntentFilter();
-        pf.addAction(Intent.ACTION_PACKAGE_ADDED);
-        pf.addAction(Intent.ACTION_PACKAGE_REMOVED);
-        pf.addAction(Intent.ACTION_PACKAGE_CHANGED);
-        pf.addAction(Intent.ACTION_PACKAGE_REPLACED);
-        pf.addDataScheme("package");
-        listen(packagesReceiver, pf);
-        listen(batteryReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+    /** Il motore grafico della WebView si e' chiuso: senza questo Android chiuderebbe tutta l'app. */
+    private void onRendererGone() {
+        rendererCrashes++;
+        WebView old = web;
+        web = null;
+        pageReady = false;
+        if (old != null) {
+            ViewGroup parent = (ViewGroup) old.getParent();
+            if (parent != null) parent.removeView(old);
+            old.destroy();
+        }
+        if (rendererCrashes > 3) {
+            showMessage("La grafica di GlassOS continua a bloccarsi su questo telefono.\n\n"
+                    + "Manda uno screenshot di questa schermata a chi ti ha dato l'app.\n\n"
+                    + "WebView: " + webViewVersion());
+            return;
+        }
+        createWeb(true);
+    }
+
+    private String webViewVersion() {
+        try {
+            android.content.pm.PackageInfo p = WebView.getCurrentWebViewPackage();
+            return p == null ? "non trovata" : p.packageName + " " + p.versionName;
+        } catch (Throwable e) { return "?"; }
+    }
+
+    private void showCrash(File crash) {
+        String text;
+        try { text = new String(Files.readAllBytes(crash.toPath()), StandardCharsets.UTF_8); }
+        catch (Exception e) { text = "(errore illeggibile)"; }
+        showMessage("GlassOS si è chiuso per un errore.\nFai uno screenshot di questa schermata (o premi Copia) e mandalo per la correzione.\n\n"
+                + "WebView: " + webViewVersion() + "\n\n" + text);
+    }
+
+    private void showMessage(String text) {
+        LinearLayout box = new LinearLayout(this);
+        box.setOrientation(LinearLayout.VERTICAL);
+        box.setBackgroundColor(Color.BLACK);
+        int pad = (int) (20 * getResources().getDisplayMetrics().density);
+        box.setPadding(pad, pad * 2, pad, pad);
+
+        TextView tv = new TextView(this);
+        tv.setText(text);
+        tv.setTextColor(Color.WHITE);
+        tv.setTextSize(13);
+        tv.setTextIsSelectable(true);
+        ScrollView sv = new ScrollView(this);
+        sv.addView(tv);
+        box.addView(sv, new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1));
+
+        LinearLayout row = new LinearLayout(this);
+        row.setGravity(Gravity.CENTER);
+        Button copy = new Button(this);
+        copy.setText("Copia");
+        copy.setOnClickListener(v -> {
+            ClipboardManager cm = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+            cm.setPrimaryClip(ClipData.newPlainText("GlassOS", text));
+        });
+        Button retry = new Button(this);
+        retry.setText("Riprova");
+        retry.setOnClickListener(v -> {
+            App.crashFile(this).delete();
+            recreate();
+        });
+        row.addView(copy);
+        row.addView(retry);
+        box.addView(row);
+        setContentView(box);
     }
 
     private void listen(BroadcastReceiver r, IntentFilter f) {
-        if (Build.VERSION.SDK_INT >= 33) registerReceiver(r, f, Context.RECEIVER_EXPORTED);
-        else registerReceiver(r, f);
+        try {
+            if (Build.VERSION.SDK_INT >= 33) registerReceiver(r, f, Context.RECEIVER_EXPORTED);
+            else registerReceiver(r, f);
+        } catch (Throwable ignored) { }
     }
 
     private void setupWindow() {
@@ -189,6 +289,11 @@ public class MainActivity extends Activity {
 
     @SuppressWarnings("deprecation")
     private void applyStatusBar() {
+        try { applyStatusBarUnsafe(); } catch (Throwable ignored) { }
+    }
+
+    @SuppressWarnings("deprecation")
+    private void applyStatusBarUnsafe() {
         Window w = getWindow();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             WindowInsetsController c = w.getInsetsController();
@@ -206,7 +311,11 @@ public class MainActivity extends Activity {
 
     /** Passa all'interfaccia gli spazi occupati da fotocamera/notch e barra di navigazione. */
     private void pushInsets() {
-        if (!pageReady) return;
+        try { pushInsetsUnsafe(); } catch (Throwable ignored) { }
+    }
+
+    private void pushInsetsUnsafe() {
+        if (!pageReady || web == null) return;
         WindowInsets ins = web.getRootWindowInsets();
         if (ins == null) return;
         float d = getResources().getDisplayMetrics().density;
@@ -229,7 +338,7 @@ public class MainActivity extends Activity {
 
     void js(String code) {
         if (web == null) return;
-        runOnUiThread(() -> { if (pageReady) web.evaluateJavascript("try{" + code + "}catch(e){}", null); });
+        runOnUiThread(() -> { if (pageReady && web != null) web.evaluateJavascript("try{" + code + "}catch(e){}", null); });
     }
 
     @Override
@@ -276,7 +385,7 @@ public class MainActivity extends Activity {
     protected void onDestroy() {
         try { unregisterReceiver(packagesReceiver); } catch (Exception ignored) { }
         try { unregisterReceiver(batteryReceiver); } catch (Exception ignored) { }
-        bridge.release();
+        if (bridge != null) bridge.release();
         if (web != null) web.destroy();
         super.onDestroy();
     }

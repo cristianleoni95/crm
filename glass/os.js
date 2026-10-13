@@ -803,6 +803,8 @@ function askPin() {
 /* ---------------- avvio ---------------- */
 function boot() {
   document.body.classList.toggle('native', !!native);
+  // riavvio dopo un crash della grafica: niente rifrazione (l'effetto piu' pesante)
+  if (/[?&]safe=1/.test(location.search)) { OS.settings.refract = false; store.set('settings', OS.settings); setTimeout(() => OS.toast('Grafica alleggerita per questo telefono'), 800); }
   applySettings();
   buildRegistry();
   syncLayout();

@@ -196,7 +196,7 @@ public class Bridge {
             byte[] png = bos.toByteArray();
             icons.put(id, png);
             return png;
-        } catch (Exception e) {
+        } catch (Throwable e) {   // anche OutOfMemoryError su icone enormi
             return null;
         }
     }
