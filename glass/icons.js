@@ -50,7 +50,7 @@ const ART = (() => {
       return V('', `<rect width="100" height="100" fill="#000"/><circle cx="50" cy="50" r="41" fill="#fff"/>${ticks}${nums}
         <rect x="48.5" y="28" width="3" height="24" rx="1.5" fill="#1c1c1e" transform="rotate(${h * 30} 50 50)"/>
         <rect x="49" y="17" width="2" height="35" rx="1" fill="#1c1c1e" transform="rotate(${m * 6} 50 50)"/>
-        <g transform="rotate(${s * 6} 50 50)" class="sec-hand"><rect x="49.5" y="14" width="1" height="44" fill="#ff9500"/></g>
+        <g class="sec-hand" style="animation-delay:-${s}s"><rect x="49.5" y="14" width="1" height="44" fill="#ff9500"/></g>
         <circle cx="50" cy="50" r="2.4" fill="#ff9500"/><circle cx="50" cy="50" r="1" fill="#fff"/>`);
     },
     calculator: () => {

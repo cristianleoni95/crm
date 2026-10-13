@@ -348,7 +348,7 @@ const SettingsApp = {
     const pin = el.querySelector('#set-pin');
     if (pin) pin.onchange = () => { const v = pin.value.replace(/\D/g, ''); OS.set('pin', v.length === 4 ? v : ''); OS.toast(v.length === 4 ? 'Codice impostato' : 'Codice rimosso'); };
     if (native) {
-      el.querySelector('#set-home').onclick = () => native.openHomeSettings();
+      el.querySelector('#set-home').onclick = () => native.requestDefaultHome();
       el.querySelector('#set-android').onclick = () => native.openSettings('');
     }
   },

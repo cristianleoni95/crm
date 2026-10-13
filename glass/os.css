@@ -49,12 +49,12 @@ svg { display: block; }
 
 /* ---------- sfondo ---------- */
 #wallpaper {
-  position: absolute; inset: -4%;
+  position: absolute; inset: -4%; will-change: transform;
   background: #123 center/cover no-repeat;
   transition: transform .6s var(--ease-out), filter .6s var(--ease-out);
 }
 body.locked #wallpaper { transform: scale(1.06); }
-body.app-open #wallpaper, body.overlay #wallpaper { filter: blur(6px) brightness(.8); transform: scale(1.04); }
+body.app-open #wallpaper { transform: scale(1.04); }
 
 /* ---------- materiale Liquid Glass ---------- */
 .glass {
@@ -192,7 +192,7 @@ body.no-island #island { display: none; }
 }
 body.locked #home { transform: scale(1.08); opacity: 0; pointer-events: none; }
 body.app-open #home { transform: scale(.92); opacity: .0; }
-body.overlay #home { filter: blur(10px); transform: scale(.97); }
+body.overlay #home { opacity: .3; transform: scale(.97); }
 
 #pages {
   flex: 1; display: flex; overflow-x: auto; overflow-y: hidden;
@@ -306,7 +306,7 @@ body.jiggle #search-pill { opacity: 0; pointer-events: none; }
 /* ---------- Spotlight ---------- */
 #spotlight {
   position: absolute; inset: 0; z-index: 40; padding: calc(var(--safe-top) + 54px) 14px 0;
-  display: flex; flex-direction: column; animation: fadein .25s;
+  display: flex; flex-direction: column; animation: fadein .25s; background: rgba(0,0,0,.45);
 }
 .sp-bar { display: flex; align-items: center; gap: 8px; border-radius: 16px; padding: 0 12px; height: 44px; }
 .sp-bar svg { width: 18px; fill: none; stroke: var(--text-2); stroke-width: 2.4; stroke-linecap: round; flex: none; }
@@ -430,7 +430,7 @@ body.no-status #statusbar { display: none; }
 .zoomer .icon { width: 100%; height: 100%; border-radius: 0; box-shadow: none; }
 
 /* ---------- menu contestuale ---------- */
-#ctx { position: absolute; inset: 0; z-index: 85; animation: fadein .2s; }
+#ctx { position: absolute; inset: 0; z-index: 85; animation: fadein .2s; background: rgba(0,0,0,.35); }
 .ctx-icon { position: absolute; animation: pop .35s var(--ease-spring); }
 .ctx-icon .icon { width: 100%; height: 100%; }
 @keyframes pop { 50% { transform: scale(1.12); } }
@@ -484,3 +484,20 @@ body.light { --notes-bg: #f2f2f7; --settings-bg: #f2f2f7; }
 .clk-pick input { width: 74px; font-size: 44px; background: #1c1c1e; border: 0; border-radius: 12px; color: #fff; text-align: center; padding: 6px 0; outline: 0; }
 .clk-pick span { font-size: 16px; opacity: .7; }
 #clk-seg button.on { background: #636366; color: #fff; }
+
+/* lancetta dei secondi dell'icona Orologio: animata dal CSS, niente ridisegno ogni secondo */
+.sec-hand { transform-box: view-box; transform-origin: 50px 50px; animation: secHand 60s linear infinite; }
+@keyframes secHand { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+
+/* avviso "imposta come Home predefinita" */
+#home-banner {
+  position: absolute; z-index: 25; left: 12px; right: 12px; top: calc(var(--safe-top) + 50px);
+  border-radius: 22px; padding: 12px 12px 12px 16px; display: flex; align-items: center; gap: 10px;
+  font-size: 14px; color: #fff; animation: menuIn .4s var(--ease-spring); transform-origin: top center;
+  background: rgba(22,22,28,.9) !important; text-shadow: none;
+}
+#home-banner b { display: block; font-size: 15px; }
+#home-banner .grow { flex: 1; min-width: 0; line-height: 1.25; }
+#home-banner button.go { background: #fff; color: #000; font-weight: 600; padding: 8px 14px; border-radius: 16px; flex: none; }
+#home-banner button.x { opacity: .7; font-size: 20px; padding: 0 4px; flex: none; }
+body.jiggle #home-banner, body.overlay #home-banner, body.app-open #home-banner { display: none; }

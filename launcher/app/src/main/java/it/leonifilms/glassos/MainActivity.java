@@ -52,6 +52,7 @@ public class MainActivity extends Activity {
 
     static final String ORIGIN = "https://appassets.androidplatform.net";
     private static final int REQ_LOCATION = 1, REQ_FILE = 2;
+    static final int REQ_HOME = 3;
 
     WebView web;
     Bridge bridge;
@@ -375,6 +376,11 @@ public class MainActivity extends Activity {
     @Override
     protected void onActivityResult(int code, int result, Intent data) {
         super.onActivityResult(code, result, data);
+        if (code == REQ_HOME) {
+            // se l'utente ha rifiutato (o il telefono non mostra la finestra) apre le impostazioni Home
+            if (!bridge.isDefaultHome() && result != RESULT_OK) bridge.openHomeSettings();
+            js("GlassOS.onResume()");
+        }
         if (code == REQ_FILE && fileCallback != null) {
             fileCallback.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(result, data));
             fileCallback = null;

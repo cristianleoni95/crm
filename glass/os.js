@@ -9,7 +9,7 @@ const nat = (fn, ...a) => { try { return native && native[fn] ? native[fn](...a)
 
 /* ---------------- sfondi (SVG generati, niente immagini esterne) ---------------- */
 const svgUrl = (s) => `url('data:image/svg+xml,${encodeURIComponent(s).replace(/'/g, '%27')}')`;
-const blobs = (bg, items) => svgUrl(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice"><defs><filter id="b" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="38"/></filter></defs><rect width="390" height="844" fill="${bg}"/><g filter="url(#b)">${items}</g></svg>`);
+const blobs = (bg, items) => (`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice"><defs><filter id="b" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="38"/></filter></defs><rect width="390" height="844" fill="${bg}"/><g filter="url(#b)">${items}</g></svg>`);
 const WALLPAPERS = [
   { name: 'Aurora', css: blobs('#1b0f3a', '<circle cx="80" cy="180" r="170" fill="#ff4fa3"/><circle cx="330" cy="330" r="190" fill="#7b5cff"/><circle cx="120" cy="620" r="210" fill="#18c8ff"/><circle cx="340" cy="780" r="150" fill="#ffb84d"/>') },
   { name: 'Tramonto', css: blobs('#2a0b1f', '<circle cx="320" cy="140" r="180" fill="#ffcc4d"/><circle cx="60" cy="380" r="200" fill="#ff5e62"/><circle cx="300" cy="640" r="220" fill="#b0306a"/><circle cx="60" cy="820" r="160" fill="#5b2a86"/>') },
@@ -17,15 +17,38 @@ const WALLPAPERS = [
   { name: 'Prato', css: blobs('#0c2312', '<circle cx="300" cy="150" r="170" fill="#d4fc79"/><circle cx="70" cy="420" r="200" fill="#38b26f"/><circle cx="320" cy="700" r="210" fill="#96e6a1"/><circle cx="40" cy="830" r="150" fill="#0f6e5a"/>') },
   { name: 'Notte', css: blobs('#05060f', '<circle cx="90" cy="200" r="150" fill="#283c86"/><circle cx="330" cy="520" r="200" fill="#45108a"/><circle cx="80" cy="780" r="190" fill="#1f1c5c"/>') },
   { name: 'Alba', css: blobs('#fbe9e0', '<circle cx="80" cy="170" r="170" fill="#ffd1dc"/><circle cx="330" cy="380" r="200" fill="#c7b8ff"/><circle cx="100" cy="660" r="210" fill="#a8e6ff"/><circle cx="330" cy="820" r="150" fill="#ffe29a"/>') },
-  { name: 'Onde', css: svgUrl('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0f2027"/><stop offset="1" stop-color="#2c5364"/></linearGradient></defs><rect width="390" height="844" fill="url(#g)"/>' +
+  { name: 'Onde', css: ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0f2027"/><stop offset="1" stop-color="#2c5364"/></linearGradient></defs><rect width="390" height="844" fill="url(#g)"/>' +
     [['#ff6a88', 420], ['#ff99ac', 520], ['#fcb69f', 620], ['#ffecd2', 720]].map(([c, y], i) => `<path d="M0 ${y} C 120 ${y - 90 - i * 10}, 260 ${y + 90}, 390 ${y - 40} V844 H0Z" fill="${c}" opacity=".85"/>`).join('') + '</svg>') },
   { name: 'Grafite', css: blobs('#111', '<circle cx="90" cy="200" r="160" fill="#555"/><circle cx="320" cy="500" r="190" fill="#333"/><circle cx="80" cy="760" r="180" fill="#666"/>') },
-];
+].map(w => ({ name: w.name, svg: w.css, css: svgUrl(w.css) }));
+
+// Lo sfondo SVG sfocato e' costoso da ridisegnare: lo si trasforma una volta in immagine JPEG
+// alla risoluzione dello schermo e la si tiene in memoria (anche tra un avvio e l'altro).
+function rasterWallpaper(i, done) {
+  const w = WALLPAPERS[i]; if (!w) return done(null);
+  const dpr = Math.min(devicePixelRatio || 1, 2.5);
+  const W = Math.round(innerWidth * 1.08 * dpr), H = Math.round(innerHeight * 1.08 * dpr);
+  const key = `${i}:${W}x${H}:1`;
+  const cached = store.get('wallbmp', null);
+  if (cached && cached.key === key) return done(cached.url);
+  const img = new Image();
+  img.onload = () => {
+    try {
+      const c = document.createElement('canvas'); c.width = W; c.height = H;
+      c.getContext('2d').drawImage(img, 0, 0, W, H);
+      const url = c.toDataURL('image/jpeg', .9);
+      store.set('wallbmp', { key, url });
+      done(url);
+    } catch { done(null); }
+  };
+  img.onerror = () => done(null);
+  img.src = 'data:image/svg+xml,' + encodeURIComponent(w.svg.replace('<svg ', `<svg width="${W}" height="${H}" `));
+}
 
 /* ---------------- stato ---------------- */
 const DEFAULTS = {
   wall: 0, customWall: '', theme: 'dark', glass: 'clear', icons: 'color', blur: 14,
-  refract: true, island: true, widgets: true, labels: true, fakeStatus: true, pin: '',
+  refract: !native, island: true, widgets: true, labels: true, fakeStatus: true, pin: '',
 };
 const store = {
   get(k, d) { try { const v = localStorage.getItem('glass.' + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
@@ -64,8 +87,11 @@ function applySettings() {
   b.classList.toggle('no-labels', !s.labels);
   b.classList.toggle('no-status', !!native && !s.fakeStatus);
   document.documentElement.style.setProperty('--blur', s.blur + 'px');
-  const w = s.wall === 'custom' && s.customWall ? `url(${s.customWall})` : (WALLPAPERS[s.wall] || WALLPAPERS[0]).css;
-  $('#wallpaper').style.backgroundImage = w;
+  if (s.wall === 'custom' && s.customWall) $('#wallpaper').style.backgroundImage = `url(${s.customWall})`;
+  else {
+    const i = WALLPAPERS[s.wall] ? s.wall : 0;
+    rasterWallpaper(i, (url) => { $('#wallpaper').style.backgroundImage = url ? `url(${url})` : WALLPAPERS[i].css; });
+  }
   nat('setStatusBarVisible', !s.fakeStatus);
   refreshLiquid();
 }
@@ -695,10 +721,24 @@ window.GlassOS = {
     if (!busy) $('#pages').scrollTo({ left: 0, behavior: 'smooth' });
     $$('.zoomer').forEach(z => z.remove());
   },
-  onResume() { $$('.zoomer').forEach(z => z.remove()); tick(); refreshBattery(); },
+  onResume() { $$('.zoomer').forEach(z => z.remove()); tick(); refreshBattery(); checkDefaultHome(); },
   onAppsChanged() { buildRegistry(); syncLayout(); renderHome(); },
   onBattery(level, charging) { setBattery(level, charging); },
 };
+
+/* ---------------- GlassOS come Home predefinita ---------------- */
+function checkDefaultHome() {
+  const old = $('#home-banner');
+  if (!native || nat('isDefaultHome') !== false || store.get('bannerOff', false)) { if (old) old.remove(); return; }
+  if (old) return;
+  const b = document.createElement('div');
+  b.id = 'home-banner'; b.className = 'glass';
+  b.innerHTML = `<div class="grow"><b>Usa GlassOS come Home</b>Così il tasto Home ti riporta sempre qui.</div>
+    <button class="go">Imposta</button><button class="x" aria-label="Chiudi">×</button>`;
+  b.querySelector('.go').onclick = () => nat('requestDefaultHome');
+  b.querySelector('.x').onclick = () => { store.set('bannerOff', true); b.remove(); };
+  $('#home').appendChild(b);
+}
 
 /* ---------------- orologio, data, batteria ---------------- */
 const safeTop = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--safe-top')) || 0;
@@ -714,7 +754,7 @@ function tick() {
   $$('.art-icon').forEach(ic => {
     const tile = ic.closest('.app'); if (!tile) return;
     const a = appById(tile.dataset.id);
-    if (a && (a.role === 'clock' || (a.role === 'calendar' && d.getSeconds() === 0))) ic.innerHTML = ART[a.role]();
+    if (a && (a.role === 'clock' || a.role === 'calendar') && d.getSeconds() === 0) ic.innerHTML = ART[a.role]();
   });
   if (!OS.layout) return;
   const left = OS.clock.tm.end - Date.now();
@@ -810,8 +850,12 @@ function boot() {
   syncLayout();
   setupLock();
   tick(); refreshBattery(); net();
-  requestAnimationFrame(() => { renderHome(); });
-  let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(renderHome, 200); });
+  requestAnimationFrame(() => { renderHome(); checkDefaultHome(); });
+  let rz, lastW = innerWidth;
+  addEventListener('resize', () => {
+    clearTimeout(rz);
+    rz = setTimeout(() => { renderHome(); if (innerWidth !== lastW) { lastW = innerWidth; applySettings(); } }, 200);
+  });
   if (!native && 'serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 }
 boot();

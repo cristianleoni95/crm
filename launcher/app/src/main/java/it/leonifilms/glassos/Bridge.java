@@ -1,5 +1,6 @@
 package it.leonifilms.glassos;
 
+import android.app.role.RoleManager;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
@@ -132,6 +133,32 @@ public class Bridge {
     public void openSettings(String action) {
         String a = action == null || action.isEmpty() ? Settings.ACTION_SETTINGS : action;
         start(new Intent(a).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+    }
+
+    @JavascriptInterface
+    public boolean isDefaultHome() {
+        try {
+            Intent i = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME);
+            ResolveInfo ri = pm.resolveActivity(i, PackageManager.MATCH_DEFAULT_ONLY);
+            return ri != null && ri.activityInfo != null && act.getPackageName().equals(ri.activityInfo.packageName);
+        } catch (Throwable e) { return true; }
+    }
+
+    /** Apre la finestra di sistema "Impostare GlassOS come app Home predefinita?". */
+    @JavascriptInterface
+    public void requestDefaultHome() {
+        act.runOnUiThread(() -> {
+            try {
+                if (Build.VERSION.SDK_INT >= 29) {
+                    RoleManager rm = act.getSystemService(RoleManager.class);
+                    if (rm != null && rm.isRoleAvailable(RoleManager.ROLE_HOME) && !rm.isRoleHeld(RoleManager.ROLE_HOME)) {
+                        act.startActivityForResult(rm.createRequestRoleIntent(RoleManager.ROLE_HOME), MainActivity.REQ_HOME);
+                        return;
+                    }
+                }
+            } catch (Throwable ignored) { }
+            openHomeSettings();
+        });
     }
 
     @JavascriptInterface
