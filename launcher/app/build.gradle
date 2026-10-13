@@ -2,6 +2,9 @@ plugins {
     id 'com.android.application'
 }
 
+// ogni build di GitHub Actions ha un numero piu' alto: cosi' l'aggiornamento si installa sopra
+def buildNumber = (System.getenv('GITHUB_RUN_NUMBER') ?: '1').toInteger()
+
 android {
     namespace 'it.leonifilms.glassos'
     compileSdk 34
@@ -10,9 +13,8 @@ android {
         applicationId 'it.leonifilms.glassos'
         minSdk 26
         targetSdk 34
-        // ogni build di GitHub Actions ha un numero piu' alto: cosi' l'aggiornamento si installa sopra
-        versionCode (System.getenv('GITHUB_RUN_NUMBER') ?: '1') as int
-        versionName "1.0." + (System.getenv('GITHUB_RUN_NUMBER') ?: '0')
+        versionCode buildNumber
+        versionName "1.0.${buildNumber}"
     }
 
     signingConfigs {
