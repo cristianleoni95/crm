@@ -1,0 +1,51 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'it.leonifilms.glassos'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'it.leonifilms.glassos'
+        minSdk 26
+        targetSdk 34
+        // ogni build di GitHub Actions ha un numero piu' alto: cosi' l'aggiornamento si installa sopra
+        versionCode (System.getenv('GITHUB_RUN_NUMBER') ?: '1') as int
+        versionName "1.0." + (System.getenv('GITHUB_RUN_NUMBER') ?: '0')
+    }
+
+    signingConfigs {
+        // chiave fissa nel repository: serve solo a far installare gli aggiornamenti sopra la versione precedente
+        glassos {
+            storeFile file('../glassos.keystore')
+            storePassword 'glassos123'
+            keyAlias 'glassos'
+            keyPassword 'glassos123'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.glassos
+        }
+        debug {
+            signingConfig signingConfigs.glassos
+        }
+    }
+
+    // l'interfaccia e' la stessa della versione web: cartella glass/ del repository
+    sourceSets {
+        main.assets.srcDirs = ['../../glass']
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
+
+dependencies {
+    implementation 'androidx.webkit:webkit:1.11.0'
+}

@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>GlassOS</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icona.svg" type="image/svg+xml">
+<link rel="stylesheet" href="os.css">
+</head>
+<body>
+<!-- contenitore dei filtri SVG per la rifrazione "liquid glass" (popolato da os.js) -->
+<svg id="lg-defs" width="0" height="0" aria-hidden="true" style="position:absolute"><defs></defs></svg>
+
+<div id="device">
+  <div id="wallpaper"></div>
+
+  <!-- barra di stato -->
+  <header id="statusbar">
+    <span class="sb-time" id="sb-time">9:41</span>
+    <div id="island"><span id="island-text"></span></div>
+    <span class="sb-icons">
+      <svg viewBox="0 0 18 12" class="sb-signal"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg>
+      <svg viewBox="0 0 16 12" class="sb-wifi" id="sb-wifi"><path d="M8 11.5 5.6 9a3.4 3.4 0 0 1 4.8 0z"/><path d="M3.5 7a6.4 6.4 0 0 1 9 0l-1.3 1.3a4.6 4.6 0 0 0-6.4 0z"/><path d="M1.2 4.7a9.6 9.6 0 0 1 13.6 0L13.5 6A7.8 7.8 0 0 0 2.5 6z"/></svg>
+      <span class="sb-battery"><span class="sb-batt-level" id="sb-batt"></span></span>
+    </span>
+  </header>
+
+  <!-- schermata di blocco -->
+  <section id="lock">
+    <div class="lock-top">
+      <div class="lock-date" id="lock-date"></div>
+      <div class="lock-clock" id="lock-clock">9:41</div>
+    </div>
+    <div class="lock-notifs" id="lock-notifs"></div>
+    <div class="lock-bottom">
+      <button class="lock-btn glass" id="lock-torch" aria-label="Torcia"><svg viewBox="0 0 24 24"><path d="M8 2h8v5l-2 4v11h-4V11L8 7z"/><path d="M8 6h8"/></svg></button>
+      <div class="lock-hint">Scorri verso l'alto per sbloccare</div>
+      <button class="lock-btn glass" id="lock-camera" aria-label="Fotocamera"><svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></button>
+    </div>
+    <div class="home-indicator"></div>
+  </section>
+
+  <!-- codice di sblocco -->
+  <section id="passcode" hidden>
+    <div class="pc-title">Inserisci codice</div>
+    <div class="pc-dots" id="pc-dots"><i></i><i></i><i></i><i></i></div>
+    <div class="pc-pad" id="pc-pad"></div>
+    <button class="pc-cancel" id="pc-cancel">Annulla</button>
+  </section>
+
+  <!-- home -->
+  <main id="home">
+    <div id="pages"></div>
+    <div id="page-dots"></div>
+    <button id="search-pill" class="glass liquid"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>Cerca</button>
+    <nav id="dock" class="glass liquid"></nav>
+    <button id="jiggle-done" class="glass" hidden>Fine</button>
+  </main>
+
+  <!-- ricerca (Spotlight) -->
+  <section id="spotlight" hidden>
+    <div class="sp-bar glass">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+      <input id="sp-input" type="search" placeholder="Cerca app o sul web" autocomplete="off">
+      <button id="sp-close">Annulla</button>
+    </div>
+    <div class="sp-results" id="sp-results"></div>
+  </section>
+
+  <!-- centro di controllo -->
+  <section id="cc" hidden>
+    <div class="cc-grid" id="cc-grid"></div>
+  </section>
+
+  <!-- finestra app -->
+  <section id="appwin" hidden>
+    <div class="app-body" id="app-body"></div>
+    <div class="home-indicator app-indicator" id="app-indicator"></div>
+  </section>
+
+  <div id="dimmer"></div>
+  <div id="toast" class="glass"></div>
+</div>
+
+<script src="icons.js"></script>
+<script src="apps.js"></script>
+<script src="os.js"></script>
+</body>
+</html>
