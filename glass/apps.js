@@ -311,10 +311,11 @@ const SettingsApp = {
         <div class="a-row"><span class="grow">Icone</span></div>
         <div class="a-row" style="padding-top:0">${seg('icons', [['color', 'Colorate'], ['clear', 'Vetro']])}</div>
         <div class="a-row"><span>Sfocatura</span><input type="range" min="4" max="30" value="${s.blur}" id="set-blur"></div>
+        <div class="a-row"><span class="grow">Vetro realistico (più lento)</span>${sw('realGlass')}</div>
         <div class="a-row"><span class="grow">Rifrazione liquida</span>${sw('refract')}</div>
         <div class="a-row"><span class="grow">Dynamic Island</span>${sw('island')}</div>
       </div>
-      <p class="a-note">La rifrazione deforma lo sfondo ai bordi del vetro come una lente. Se il telefono rallenta, disattivala.</p>
+      <p class="a-note">Il vetro realistico sfoca dal vivo ciò che sta dietro; la rifrazione (solo con vetro realistico) piega lo sfondo ai bordi come una lente. Sono effetti pesanti: se il telefono rallenta, lasciali spenti.</p>
       <div class="a-group-title">Home</div>
       <div class="a-group">
         <div class="a-row"><span class="grow">Widget meteo e calendario</span>${sw('widgets')}</div>

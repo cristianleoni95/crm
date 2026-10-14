@@ -22,34 +22,84 @@ const WALLPAPERS = [
   { name: 'Grafite', css: blobs('#111', '<circle cx="90" cy="200" r="160" fill="#555"/><circle cx="320" cy="500" r="190" fill="#333"/><circle cx="80" cy="760" r="180" fill="#666"/>') },
 ].map(w => ({ name: w.name, svg: w.css, css: svgUrl(w.css) }));
 
-// Lo sfondo SVG sfocato e' costoso da ridisegnare: lo si trasforma una volta in immagine JPEG
-// alla risoluzione dello schermo e la si tiene in memoria (anche tra un avvio e l'altro).
-function rasterWallpaper(i, done) {
-  const w = WALLPAPERS[i]; if (!w) return done(null);
+// Lo sfondo viene disegnato una volta come immagine JPEG alla risoluzione dello schermo
+// (l'SVG sfocato e' costoso da ridisegnare) e se ne ricava anche una copia gia' sfocata:
+// in modalita' veloce il "vetro" mostra quella copia invece di sfocare dal vivo.
+function wallGeometry() {
   const dpr = Math.min(devicePixelRatio || 1, 2.5);
-  const W = Math.round(innerWidth * 1.08 * dpr), H = Math.round(innerHeight * 1.08 * dpr);
-  const key = `${i}:${W}x${H}:1`;
+  return { dpr, W: Math.round(innerWidth * 1.08 * dpr), H: Math.round(innerHeight * 1.08 * dpr) };
+}
+function loadImg(src) {
+  return new Promise((ok, ko) => { const i = new Image(); i.onload = () => ok(i); i.onerror = ko; i.src = src; });
+}
+async function rasterWallpaper(s) {
+  const { W, H } = wallGeometry();
+  const custom = s.wall === 'custom' && s.customWall;
+  const i = WALLPAPERS[s.wall] ? s.wall : 0;
+  const id = custom ? 'c' + s.customWall.length + s.customWall.slice(-24) : 'w' + i;
+  const key = `${id}:${W}x${H}:2`;
   const cached = store.get('wallbmp', null);
-  if (cached && cached.key === key) return done(cached.url);
-  const img = new Image();
-  img.onload = () => {
+  if (cached && cached.key === key) return cached.url;
+  const src = custom ? s.customWall
+    : 'data:image/svg+xml,' + encodeURIComponent(WALLPAPERS[i].svg.replace('<svg ', `<svg width="${W}" height="${H}" `));
+  const img = await loadImg(src);
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const k = Math.max(W / img.width, H / img.height);  // "cover" come il CSS
+  c.getContext('2d').drawImage(img, (W - img.width * k) / 2, (H - img.height * k) / 2, img.width * k, img.height * k);
+  const url = c.toDataURL('image/jpeg', .9);
+  store.set('wallbmp', { key, url });
+  return url;
+}
+async function blurredWallpaper(url, blurPx) {
+  const img = await loadImg(url);
+  const sc = .25, w = Math.round(img.width * sc), h = Math.round(img.height * sc);
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  const ctx = c.getContext('2d');
+  const b = blurPx * (w / (innerWidth * 1.08)) * 1.6, m = b * 3;
+  ctx.filter = `blur(${b}px) saturate(180%)`;
+  ctx.drawImage(img, -m, -m, w + m * 2, h + m * 2);  // margine: niente bordi scuri
+  return c.toDataURL('image/jpeg', .85);
+}
+let wallJob = 0;
+async function applyWallpaper(s) {
+  const job = ++wallJob;
+  let url = null;
+  try { url = await rasterWallpaper(s); } catch {}
+  if (job !== wallJob) return;
+  const fallback = s.wall === 'custom' && s.customWall ? `url(${s.customWall})` : (WALLPAPERS[s.wall] || WALLPAPERS[0]).css;
+  $('#wallpaper').style.backgroundImage = url ? `url(${url})` : fallback;
+  if (url && !s.realGlass) {
     try {
-      const c = document.createElement('canvas'); c.width = W; c.height = H;
-      c.getContext('2d').drawImage(img, 0, 0, W, H);
-      const url = c.toDataURL('image/jpeg', .9);
-      store.set('wallbmp', { key, url });
-      done(url);
-    } catch { done(null); }
-  };
-  img.onerror = () => done(null);
-  img.src = 'data:image/svg+xml,' + encodeURIComponent(w.svg.replace('<svg ', `<svg width="${W}" height="${H}" `));
+      const b = await blurredWallpaper(url, s.blur);
+      if (job === wallJob) { document.documentElement.style.setProperty('--wall-blur', `url(${b})`); placeGlass(); }
+    } catch {}
+  }
+}
+
+// posiziona la copia sfocata dello sfondo dietro ogni pannello di vetro, allineata allo sfondo vero
+function placeGlass() {
+  if (OS.settings.realGlass) return;
+  const vw = innerWidth, vh = innerHeight, bw = vw * 1.08, bh = vh * 1.08, ox = -vw * .04, oy = -vh * .04;
+  $$('.wallglass').forEach(el => {
+    const r = el.getBoundingClientRect();
+    el.style.setProperty('--wbp', `${(ox - r.left).toFixed(1)}px ${(oy - r.top).toFixed(1)}px`);
+    el.style.setProperty('--wbs', `${bw.toFixed(1)}px ${bh.toFixed(1)}px`);
+  });
 }
 
 /* ---------------- stato ---------------- */
 const DEFAULTS = {
   wall: 0, customWall: '', theme: 'dark', glass: 'clear', icons: 'color', blur: 14,
-  refract: !native, island: true, widgets: true, labels: true, fakeStatus: true, pin: '',
+  refract: false, island: false, widgets: true, labels: true, fakeStatus: true, pin: '',
+  realGlass: !native,   // vetro sfocato dal vivo (piu' lento); sul telefono si usa lo sfondo pre-sfocato
+  v: 2,
 };
+// impostazioni salvate da versioni precedenti: si adeguano ai nuovi valori predefiniti
+function loadSettings() {
+  const saved = store.get('settings', {});
+  if ((saved.v || 1) < 2) { delete saved.island; delete saved.refract; delete saved.realGlass; delete saved.blur; saved.v = 2; }
+  return Object.assign({}, DEFAULTS, saved);
+}
 const store = {
   get(k, d) { try { const v = localStorage.getItem('glass.' + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
   set(k, v) { try { localStorage.setItem('glass.' + k, JSON.stringify(v)); return true; } catch { return false; } },
@@ -59,7 +109,7 @@ const OS = {
   version: '1.0',
   native,
   wallpapers: WALLPAPERS,
-  settings: Object.assign({}, DEFAULTS, store.get('settings', {})),
+  settings: loadSettings(),
   layout: store.get('layout', null),     // { order: [id…], dock: [id…] }
   apps: {},                              // id -> descrizione app
   clock: { sw: { run: false, start: 0, acc: 0, laps: [] }, tm: { end: 0 } },
@@ -67,7 +117,7 @@ const OS = {
 };
 window.OS = OS;
 
-OS.set = (k, v) => { OS.settings[k] = v; store.set('settings', OS.settings); applySettings(); if (['widgets', 'labels'].includes(k)) renderHome(); };
+OS.set = (k, v) => { OS.settings[k] = v; store.set('settings', OS.settings); applySettings(); if (['widgets', 'labels', 'realGlass'].includes(k)) renderHome(); };
 
 OS.toast = (msg) => {
   const t = $('#toast'); t.textContent = msg; t.classList.add('show');
@@ -87,11 +137,9 @@ function applySettings() {
   b.classList.toggle('no-labels', !s.labels);
   b.classList.toggle('no-status', !!native && !s.fakeStatus);
   document.documentElement.style.setProperty('--blur', s.blur + 'px');
-  if (s.wall === 'custom' && s.customWall) $('#wallpaper').style.backgroundImage = `url(${s.customWall})`;
-  else {
-    const i = WALLPAPERS[s.wall] ? s.wall : 0;
-    rasterWallpaper(i, (url) => { $('#wallpaper').style.backgroundImage = url ? `url(${url})` : WALLPAPERS[i].css; });
-  }
+  b.classList.toggle('fast', !s.realGlass);
+  b.classList.toggle('refract', !!s.refract && !!s.realGlass);
+  applyWallpaper(s);
   nat('setStatusBarVisible', !s.fakeStatus);
   refreshLiquid();
 }
@@ -268,10 +316,10 @@ function widgetsHTML() {
   let cells = '';
   for (let i = 0; i < lead; i++) cells += '<span></span>';
   for (let i = 1; i <= days; i++) cells += `<span class="${i === d.getDate() ? 'today' : ''}">${i}</span>`;
-  return `<div class="widget w-weather glass liquid" data-open="glass.weather" style="position:relative">
+  return `<div class="widget w-weather glass liquid wallglass" data-open="glass.weather" style="position:relative">
       <div class="city" id="ww-city">Meteo</div><div class="temp" id="ww-temp">–</div>
       <div class="cond"><span class="wico" id="ww-ico"></span> <span id="ww-cond"></span></div><div class="hl" id="ww-hl"></div></div>
-    <div class="widget w-cal glass liquid" data-open="calendar" style="position:relative">
+    <div class="widget w-cal glass liquid wallglass" data-open="calendar" style="position:relative">
       <div class="wd">${d.toLocaleDateString('it-IT', { month: 'long' })}</div>
       <div class="mini-month">${['L', 'M', 'M', 'G', 'V', 'S', 'D'].map(x => `<b>${x}</b>`).join('')}${cells}</div></div>`;
 }
@@ -288,7 +336,7 @@ function renderHome() {
   const pages = $('#pages');
   const scroll = pages.scrollLeft;
   pages.innerHTML = chunks.map((c, i) => `<div class="page" style="grid-template-rows:repeat(${rows},98px)" data-page="${i}">${i === 0 && showW ? widgetsHTML() : ''}${c.map(id => appTile(id, 'home')).join('')}</div>`).join('') +
-    `<div class="page library" data-page="lib"><div class="lib-search glass"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="lib-q" placeholder="Libreria app" type="search"></div><div class="lib-grid" id="lib-grid"></div></div>`;
+    `<div class="page library" data-page="lib"><div class="lib-search glass wallglass"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="lib-q" placeholder="Libreria app" type="search"></div><div class="lib-grid" id="lib-grid"></div></div>`;
   pages.scrollLeft = scroll;
   $('#dock').innerHTML = OS.layout.dock.map(id => appTile(id, 'dock')).join('');
   renderLibrary('');
@@ -296,6 +344,7 @@ function renderHome() {
   renderDots();
   refreshLiquid();
   updateWidgets();
+  requestAnimationFrame(placeGlass);
 }
 
 function renderLibrary(q) {
@@ -489,7 +538,10 @@ $('#home').addEventListener('pointercancel', () => { if (press) { clearTimeout(p
 $('#home').addEventListener('contextmenu', e => e.preventDefault());
 $('#jiggle-done').onclick = stopJiggle;
 $('#search-pill').onclick = () => openSpotlight();
-$('#pages').addEventListener('scroll', () => { cancelAnimationFrame(renderDots._r); renderDots._r = requestAnimationFrame(renderDots); }, { passive: true });
+$('#pages').addEventListener('scroll', () => {
+  cancelAnimationFrame(renderDots._r);
+  renderDots._r = requestAnimationFrame(() => { renderDots(); placeGlass(); });
+}, { passive: true });
 
 function startDrag(p, e) {
   p.drag = true;
@@ -733,11 +785,15 @@ function checkDefaultHome() {
   if (old) return;
   const b = document.createElement('div');
   b.id = 'home-banner'; b.className = 'glass';
-  b.innerHTML = `<div class="grow"><b>Usa GlassOS come Home</b>Così il tasto Home ti riporta sempre qui.</div>
+  const xiaomi = /xiaomi|redmi|poco/i.test(nat('getDevice') || '');
+  b.innerHTML = `<div class="grow"><b>Usa GlassOS come Home</b>${xiaomi
+      ? 'Su Xiaomi/Redmi con i gesti il telefono rimette la sua Home: passa prima ai pulsanti (Impostazioni › Schermo intero).'
+      : 'Così il tasto Home ti riporta sempre qui.'}</div>
     <button class="go">Imposta</button><button class="x" aria-label="Chiudi">×</button>`;
   b.querySelector('.go').onclick = () => nat('requestDefaultHome');
   b.querySelector('.x').onclick = () => { store.set('bannerOff', true); b.remove(); };
   $('#home').appendChild(b);
+  placeGlass();
 }
 
 /* ---------------- orologio, data, batteria ---------------- */
@@ -801,7 +857,7 @@ function setupLock() {
   const lock = $('#lock');
   if (native) { lock.remove(); document.body.classList.remove('locked'); return; }
   document.body.classList.add('locked');
-  $('#lock-notifs').innerHTML = `<div class="notif glass"><div class="ni">${ART.personalize()}</div><div class="nt"><b>GlassOS <small>ora</small></b><p>Scorri verso l'alto per iniziare. Installa il launcher per usarlo come tema del telefono.</p></div></div>`;
+  $('#lock-notifs').innerHTML = `<div class="notif glass wallglass"><div class="ni">${ART.personalize()}</div><div class="nt"><b>GlassOS <small>ora</small></b><p>Scorri verso l'alto per iniziare. Installa il launcher per usarlo come tema del telefono.</p></div></div>`;
   let st = null;
   lock.addEventListener('pointerdown', (e) => { if (e.target.closest('button')) return; st = e.clientY; lock.style.transition = 'none'; });
   lock.addEventListener('pointermove', (e) => { if (st == null) return; const dy = Math.min(0, e.clientY - st); lock.style.transform = `translateY(${dy}px)`; lock.style.opacity = 1 + dy / 500; });
@@ -818,6 +874,7 @@ function setupLock() {
 function unlock() {
   if (OS.settings.pin) return askPin();
   $('#lock').classList.add('gone'); document.body.classList.remove('locked'); haptic(10);
+  setTimeout(placeGlass, 520);
 }
 function relock() { const l = $('#lock'); if (!l) return; OS.closeApp(); closeOverlays(); l.classList.remove('gone'); document.body.classList.add('locked'); }
 function askPin() {
@@ -833,7 +890,7 @@ function askPin() {
     haptic(5);
     code = k === '⌫' ? code.slice(0, -1) : (code + k).slice(0, 4); draw();
     if (code.length === 4) {
-      if (code === OS.settings.pin) { pc.hidden = true; $('#lock').classList.add('gone'); document.body.classList.remove('locked'); }
+      if (code === OS.settings.pin) { pc.hidden = true; $('#lock').classList.add('gone'); document.body.classList.remove('locked'); setTimeout(placeGlass, 520); }
       else { const d = $('#pc-dots'); d.classList.add('shake'); haptic(200); setTimeout(() => { d.classList.remove('shake'); code = ''; draw(); }, 420); }
     }
   };

@@ -501,3 +501,21 @@ body.light { --notes-bg: #f2f2f7; --settings-bg: #f2f2f7; }
 #home-banner button.go { background: #fff; color: #000; font-weight: 600; padding: 8px 14px; border-radius: 16px; flex: none; }
 #home-banner button.x { opacity: .7; font-size: 20px; padding: 0 4px; flex: none; }
 body.jiggle #home-banner, body.overlay #home-banner, body.app-open #home-banner { display: none; }
+
+/* ---------- modalita' veloce: vetro con sfondo pre-sfocato, nessun backdrop-filter dal vivo ---------- */
+body.fast .glass, body.fast #cc, body.fast #spotlight, body.fast #passcode, body.fast.icons-clear .icon {
+  -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+}
+body.fast .glass { background: rgba(var(--tint-rgb), calc(var(--tint) + .08)); }
+body.fast .glass.wallglass {
+  background:
+    linear-gradient(160deg, rgba(var(--tint-rgb), calc(var(--tint) + .14)), rgba(var(--tint-rgb), calc(var(--tint) * .7))) 0 0 / 100% 100% no-repeat,
+    var(--wall-blur, none) var(--wbp, 0 0) / var(--wbs, cover) no-repeat,
+    rgba(var(--tint-rgb), var(--tint));
+}
+body.fast #cc { background: linear-gradient(rgba(0,0,0,.32), rgba(0,0,0,.32)), var(--wall-blur, #111) center / cover; }
+body.fast #spotlight, body.fast #passcode { background: linear-gradient(rgba(0,0,0,.42), rgba(0,0,0,.42)), var(--wall-blur, #111) center / cover; }
+body.fast .ctx-menu { background: rgba(44,44,50,.94); }
+body.light.fast .ctx-menu { background: rgba(245,245,248,.95); }
+body.fast #toast { background: rgba(30,30,36,.9); }
+body.fast.icons-clear .icon { background: rgba(255,255,255,.2) !important; }

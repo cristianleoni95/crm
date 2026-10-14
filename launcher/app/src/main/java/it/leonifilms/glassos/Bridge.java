@@ -136,6 +136,9 @@ public class Bridge {
     }
 
     @JavascriptInterface
+    public String getDevice() { return Build.MANUFACTURER + " " + Build.MODEL; }
+
+    @JavascriptInterface
     public boolean isDefaultHome() {
         try {
             Intent i = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME);
